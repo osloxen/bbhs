@@ -13,9 +13,13 @@ function FindDataFromSpreadsheet(spreadsheetData,
   self.searchFor = searchFor;
   self.callerCallback = callerCallback;
 
+  console.log('inside FindDataFromSpreadsheet');
+
   this.initialize = function(callback) {
 
     console.log('inside initialize');
+
+    console.log('event: ', event);
 
     callback();
   };

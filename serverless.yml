@@ -60,29 +60,36 @@ provider:
 
 functions:
 
+  getSportAnnouncement:
+    handler: bbhsHandler.getSportAnnouncement
+    events:
+            - http:
+                path: /sports/announcement/{sport}
+                method: get
+
   getSport:
-    handler: teamHandler.getSportDetails
+    handler: bbhsHandler.getSportDetails
     events:
             - http:
                 path: /sports/{sport}
                 method: get
 
   getListOfSports:
-    handler: teamHandler.getListOfSports
+    handler: bbhsHandler.getListOfSports
     events:
             - http:
                 path: /sports
                 method: get
 
-  getListOfSports:
-    handler: teamHandler.getListOfArtsActivities
+  getListOfArtsActivities:
+    handler: bbhsHandler.getListOfArtsActivities
     events:
             - http:
                 path: /arts
                 method: get
 
-  getListOfSports:
-    handler: teamHandler.getListOfClubs
+  getListOfClubs:
+    handler: bbhsHandler.getListOfClubs
     events:
             - http:
                 path: /clubs

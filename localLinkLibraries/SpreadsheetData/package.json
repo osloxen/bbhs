@@ -1,5 +1,5 @@
 {
-  "name": "spreadsheetaccess",
+  "name": "spreadsheetdata",
   "version": "1.0.0",
   "description": "gets google spreadsheet data",
   "main": "spreadsheet-access.js",

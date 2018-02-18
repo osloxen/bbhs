@@ -88,7 +88,7 @@ function GetSpreadsheetData(googleSpreadsheetID,
       'max-row': maxRowNeeded,
       'min-col': 1,
       'max-col': 1,
-      'return-empty': true
+      'return-empty': false
     }, function(err, cells) {
       //console.log('cells: ', cells);
       for (var i=0;i<cells.length;i++) {
@@ -154,6 +154,7 @@ function GetSpreadsheetData(googleSpreadsheetID,
 exports.getGoogleSpreadsheetDataMultColumns = function(idForSpreadsheet,
                                             sheetNum,
                                             maxRowNeeded,
+                                            numColumnsNeeded,
                                             callerCallback) {
 
   console.log('*** inside getGoogleSpreadsheetDataOneColumn ***');
@@ -164,6 +165,7 @@ exports.getGoogleSpreadsheetDataMultColumns = function(idForSpreadsheet,
   var getSpreadsheetData = new GetSpreadsheetData(idForSpreadsheet,
                                                   sheetNum,
                                                   maxRowNeeded,
+                                                  numColumnsNeeded,
                                                   callerCallback);
 
   async.waterfall([
@@ -196,6 +198,7 @@ exports.getGoogleSpreadsheetDataOneColumn = function(idForSpreadsheet,
   var getSpreadsheetData = new GetSpreadsheetData(idForSpreadsheet,
                                                   sheetNum,
                                                   maxRowNeeded,
+                                                  null,
                                                   callerCallback);
 
   async.waterfall([
