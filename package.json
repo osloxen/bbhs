@@ -9,6 +9,7 @@
   "author": "David Berge",
   "license": "ISC",
   "dependencies": {
-    "async": "^2.6.0"
+    "async": "^2.6.0",
+    "clean-array": "^1.0.0"
   }
 }

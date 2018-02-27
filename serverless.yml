@@ -20,6 +20,8 @@ service: BBHS-Communications-Platform # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs6.10
+  timeout: 20
+#  memorySize: 3008
 
   stage: dev
 #  stage: prodGreen
@@ -59,6 +61,46 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
+
+#getActivityPictures
+
+  getActivityPictures:
+    handler: bbhsHandler.getActivityPictures
+    events:
+            - http:
+                path: /sports/pictures/{sport}
+                method: get
+
+
+  getActivityKey:
+    handler: bbhsHandler.getActivityKey
+    events:
+            - http:
+                path: /sports/key/{sport}
+                method: get
+
+
+  getTeamSchedule:
+    handler: bbhsHandler.getTeamSchedule
+    events:
+            - http:
+                path: /sports/schedule/{sport}
+                method: get
+
+
+  getTeamRoster:
+    handler: bbhsHandler.getTeamRoster
+    events:
+            - http:
+                path: /sports/roster/{sport}
+                method: get
+
+  getSportMercandiceLink:
+    handler: bbhsHandler.getSportMercandiceLink
+    events:
+            - http:
+                path: /sports/merch/{sport}
+                method: get
 
   getSportAnnouncement:
     handler: bbhsHandler.getSportAnnouncement
