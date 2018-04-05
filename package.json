@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.0",
-    "clean-array": "^1.0.0"
+    "clean-array": "^1.0.0",
+    "moment": "^2.22.0",
+    "public-google-calendar": "^0.2.0"
   }
 }

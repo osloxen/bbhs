@@ -132,6 +132,9 @@ exports.getTeamSchedule = function(event, context, callback) {
         function(scheduleArray, callback) {
           console.log('end of getSportSheetData Waterfall: ',scheduleArray);
 
+          var scheduleObject = {};
+          scheduleObject.schedule = scheduleArray;
+
           const res = {
               "statusCode": 200,
               "headers": {
@@ -141,7 +144,7 @@ exports.getTeamSchedule = function(event, context, callback) {
                 "Access-Control-Allow-Origin": '*',
                 "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
               },
-              "body": JSON.stringify(scheduleArray) // body must be returned as a string
+              "body": JSON.stringify(scheduleObject) // body must be returned as a string
             };
 
           context.succeed(res);

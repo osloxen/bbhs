@@ -84,7 +84,7 @@ function GetSpreadsheetData(googleSpreadsheetID,
     self.sheetInfo = [];
 
     self.sheet.getCells({
-      'min-row': 1,  // maybe start at 2?
+      'min-row': 2,  // maybe start at 2?
       'max-row': maxRowNeeded,
       'min-col': 1,
       'max-col': 1,

@@ -9,6 +9,7 @@ var cleanArray = require('clean-array');
 var spreadsheetAccess = require('localLinkLibraries/SpreadsheetAccess/spreadsheet-access.js');
 var findSpreadsheetData = require('localLinkLibraries/SpreadsheetData/find-data.js');
 var convertSpreadsheetData = require('localLinkLibraries/SpreadsheetData/convert-data.js');
+var googleCalendarData = require('localLinkLibraries/GoogleCalendarData/calendar-event-access.js');
 
 
 var frontOfficeSheetId = '1pH14tv1a1LkVch08jDARjZvYEK0SOqijK-PZ7_s1P_8';
@@ -19,6 +20,12 @@ function lookUpSportSpreadsheetID(sportName) {
     switch (sportName) {
     case "girls-lacrosse":
         return '1VxO3XMj457ZOmfbJj-H1bd_awS4GYYhaamqZ_u-aVmE';
+        break;
+    case "robotics":
+        return '1FWom1Tv0K-2ZymYA4xIWzJiK7LBl4BZvNg2uIu0u6DQ';
+        break;
+    case "drama":
+        return '1xfCeA1imABuRQZTXtCgbJtK9XmspNYoiG_j02hrmPwY';
         break;
     case "baseball":
         return 'not yet created';
@@ -38,17 +45,6 @@ function lookUpScheduleSelection(squad, schedule) {
         console.log('found Varsity');
         if (schedule == 'practice') {
           console.log('user wants practice schedule');
-          return 6;
-        } else {
-          console.log('user wants: ', schedule);
-          console.log('returning game schedule');
-          return 4;
-        }
-        break;
-    case "jv":
-        console.log('found Junior Varsity');
-        if (schedule == 'practice') {
-          console.log('user wants practice schedule');
           return 7;
         } else {
           console.log('user wants: ', schedule);
@@ -56,13 +52,63 @@ function lookUpScheduleSelection(squad, schedule) {
           return 5;
         }
         break;
+    case "jv":
+        console.log('found Junior Varsity');
+        if (schedule == 'practice') {
+          console.log('user wants practice schedule');
+          return 8;
+        } else {
+          console.log('user wants: ', schedule);
+          console.log('returning game schedule');
+          return 6;
+        }
+        break;
+    case "robotics":
+        console.log('found Robotics');
+        return 4;
+        break;
+    case "drama":
+        console.log('found Drama');
+        return 4;
+        break;
     default:
         console.log('SOMETHING WENT WRONG YOU SHOULD NEVER SEE THIS');
         console.log('squad: ', squad);
         console.log('schedule: ', schedule);
-        return 4  // BUGBUG:  do something better here
+        return 5  // BUGBUG:  do something better here
   }
 }
+
+
+exports.getTwitterFeed = function(event, context, callback) {
+
+  console.log('Inside getTwitterFeed');
+
+  console.log('event: ', event);
+  console.log('pathParameters: ', event.pathParameters);
+
+  var sportName = event.pathParameters.sport;
+
+  var spreadsheetID = lookUpSportSpreadsheetID(sportName);
+
+  async.waterfall([
+          function(callback) {
+          // do some more stuff ...
+
+          spreadsheetAccess.getGoogleSpreadsheetDataOneColumn(
+                            spreadsheetID,
+                            13, // what sheet (tab) is wanted
+                            20, // how many rows to fetch
+                            callback);
+
+        },
+        function(spreadsheetData, callback) {
+          console.log('inside getTwitterFeed Waterfall: ',spreadsheetData);
+          context.succeed(spreadsheetData);
+          callback();
+        }
+  ]);
+} // end of getTwitterFeed
 
 
 exports.getActivityPictures = function(event, context, callback) {
@@ -82,7 +128,7 @@ exports.getActivityPictures = function(event, context, callback) {
 
           spreadsheetAccess.getGoogleSpreadsheetDataOneColumn(
                             spreadsheetID,
-                            11, // what sheet (tab) is wanted
+                            2, // what sheet (tab) is wanted
                             20, // how many rows to fetch
                             callback);
 
@@ -181,6 +227,111 @@ exports.getActivityKey = function(event, context, callback) {
 
 
 
+
+exports.getTeamScheduleFromCalendar = function(event, context, callback) {
+
+  console.log('Inside getTeamScheduleFromCalendar');
+
+  console.log('event: ', event);
+  console.log('pathParameters: ', event.pathParameters);
+  console.log('query string parameters: ', event.queryStringParameters);
+
+  var sportName = event.pathParameters.sport;
+  var squad = event.queryStringParameters.squad;
+  var gender = event.queryStringParameters.gender;
+  var eventType = "game";
+
+  if (event.queryStringParameters.eventType != undefined) {  // if left off parameters just get games
+    eventType = event.queryStringParameters.eventType;
+  }
+
+  console.log('sport: ', sportName);
+  console.log('squad: ', squad);
+  console.log('gender: ', gender);
+  console.log('event type: ', eventType);
+
+  async.waterfall([
+          function(callback) {
+
+          googleCalendarData.getGoogleSportsCalendarData(
+                            sportName,
+                            squad, // varsity, jv or freshman
+                            gender,
+                            eventType, // game or practice (or both???)
+                            callback);
+        },
+        function(scheduleArray, callback) {
+          console.log('end of getGoogleSportsCalendarData Waterfall: ',scheduleArray);
+
+          var scheduleObject = {};
+          scheduleObject.schedule = scheduleArray;
+
+          const res = {
+              "statusCode": 200,
+              "headers": {
+                'Content-Type': 'application/json',
+                "X-Requested-With": '*',
+                "Access-Control-Allow-Headers": 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers',
+                "Access-Control-Allow-Origin": '*',
+                "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
+              },
+              "body": JSON.stringify(scheduleObject) // body must be returned as a string
+            };
+
+          context.succeed(res);
+          callback();
+        }
+  ]);
+
+} //end of getTeamScheduleFromCalendar
+
+
+
+
+
+exports.getArtsAndActivitiesFromCalendar = function(event, context, callback) {
+
+  console.log('Inside getArtsAndActivitiesFromCalendar');
+
+  async.waterfall([
+          function(callback) {
+
+          googleCalendarData.getGoogleActivitiesCalendarData(callback);
+        },
+        function(scheduleArray, callback) {
+          console.log('end of getGoogleActivitiesCalendarData Waterfall: ',scheduleArray);
+
+          var scheduleObject = {};
+          scheduleObject.schedule = scheduleArray;
+
+          const res = {
+              "statusCode": 200,
+              "headers": {
+                'Content-Type': 'application/json',
+                "X-Requested-With": '*',
+                "Access-Control-Allow-Headers": 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers',
+                "Access-Control-Allow-Origin": '*',
+                "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
+              },
+              "body": JSON.stringify(scheduleObject) // body must be returned as a string
+            };
+
+          context.succeed(res);
+          callback();
+        }
+  ]);
+
+} //end of getTeamScheduleFromCalendar
+
+
+
+
+
+
+
+
+
+
 exports.getTeamSchedule = function(event, context, callback) {
 
   console.log('Inside getTeamSchedule');
@@ -249,6 +400,9 @@ exports.getTeamSchedule = function(event, context, callback) {
         function(scheduleArray, callback) {
           console.log('end of getSportSheetData Waterfall: ',scheduleArray);
 
+          var scheduleObject = {};
+          scheduleObject.schedule = scheduleArray;
+
           const res = {
               "statusCode": 200,
               "headers": {
@@ -258,7 +412,7 @@ exports.getTeamSchedule = function(event, context, callback) {
                 "Access-Control-Allow-Origin": '*',
                 "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
               },
-              "body": JSON.stringify(scheduleArray) // body must be returned as a string
+              "body": JSON.stringify(scheduleObject) // body must be returned as a string
             };
 
           context.succeed(res);
@@ -288,7 +442,7 @@ exports.getTeamRoster = function(event, context, callback) {
 
           spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
                             spreadsheetID,
-                            8, // Sports - what sheet (tab) is wanted
+                            9, // Sports - what sheet (tab) is wanted
                             50, // how many rows to fetch
                             3, // num columns [name, number, class]
                             callback);
@@ -327,6 +481,9 @@ exports.getTeamRoster = function(event, context, callback) {
         function(rosterPlayerArray, callback) {
           console.log('end of getSportSheetData Waterfall: ',rosterPlayerArray);
 
+          var participantsArray = {};
+          participantsArray.listOfParticipants = rosterPlayerArray;
+
           const res = {
               "statusCode": 200,
               "headers": {
@@ -336,7 +493,7 @@ exports.getTeamRoster = function(event, context, callback) {
                 "Access-Control-Allow-Origin": '*',
                 "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
               },
-              "body": JSON.stringify(rosterPlayerArray) // body must be returned as a string
+              "body": JSON.stringify(participantsArray) // body must be returned as a string
             };
 
           context.succeed(res);

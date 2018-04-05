@@ -21,6 +21,7 @@ provider:
   name: aws
   runtime: nodejs6.10
   timeout: 20
+  region: us-west-2
 #  memorySize: 3008
 
   stage: dev
@@ -29,7 +30,6 @@ provider:
 
 # you can overwrite defaults here
 
-#  region: us-east-1
 
 # you can add statements to the Lambda function's IAM Role here
 #  iamRoleStatements:
@@ -54,7 +54,7 @@ provider:
 # you can add packaging information here
 #package:
 #  include:
-#    - ../npmLibraries/**
+#    - bbhsHandler.js
 #    - ../npmLibraries/SpreadsheetAccess/**
 #  exclude:
 #    - exclude-me.js
@@ -62,7 +62,28 @@ provider:
 
 functions:
 
-#getActivityPictures
+  getActivityFromCalendar:
+    handler: bbhsHandler.getArtsAndActivitiesFromCalendar
+    events:
+            - http:
+                path: /sports/activities-schedule
+                method: get
+
+
+  getSportsScheduleFromCalendar:
+    handler: bbhsHandler.getTeamScheduleFromCalendar
+    events:
+            - http:
+                path: /sports/calendar-schedule/{sport}
+                method: get
+
+
+  getTwitterFeed:
+    handler: bbhsHandler.getTwitterFeed
+    events:
+            - http:
+                path: /sports/twitter/{sport}
+                method: get
 
   getActivityPictures:
     handler: bbhsHandler.getActivityPictures
