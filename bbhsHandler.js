@@ -5,6 +5,7 @@
 
 var async = require('async');
 var cleanArray = require('clean-array');
+var moment = require('moment');
 
 var spreadsheetAccess = require('localLinkLibraries/SpreadsheetAccess/spreadsheet-access.js');
 var findSpreadsheetData = require('localLinkLibraries/SpreadsheetData/find-data.js');
@@ -18,7 +19,7 @@ var frontOfficeSheetId = '1pH14tv1a1LkVch08jDARjZvYEK0SOqijK-PZ7_s1P_8';
 function lookUpSportSpreadsheetID(sportName) {
 
     switch (sportName) {
-    case "girls-lacrosse":
+    case "girls-lax":
         return '1VxO3XMj457ZOmfbJj-H1bd_awS4GYYhaamqZ_u-aVmE';
         break;
     case "robotics":
@@ -28,15 +29,58 @@ function lookUpSportSpreadsheetID(sportName) {
         return '1xfCeA1imABuRQZTXtCgbJtK9XmspNYoiG_j02hrmPwY';
         break;
     case "baseball":
-        return 'not yet created';
+        return '1Rafm7u2xq-cH0XT5Y-JOWE02ZIwTVjXNw9CfsCKgJdU';
         break;
     case "track":
-        return 'not yet created';
+        return '1HqmoyGEBPjot5B3lafB06oO7awjFRygezNTWsXIV1tc';
+        break;
+    case "boys-soccer":
+        return '1SY91IXhxkaSgIV1nYZg95bccu5v7XAXXaKe-HHQwK2g';
+        break;
+    case "boys-lax":
+        return '1FGBqPmLJbPvX3yOygrpovaewnW0reAky52mOoToKlRU';
+        break;
+    case "tennis":
+        return '1CQM8QLNkiPVSZbIIkJL8UkEEgAwnmwapemMIFVgoKls';
+        break;
+    case "softball":
+        return '1zlluImvpZGjsMRNMIUmqpnXRB_HwEC7nUXmhirVG_IM';
+        break;
+    case "art-club":
+        return '1N0UKXcmO6wJ07AP-8YCWb8J1NMY8chs-nU-mNo9hMyI';
+        break;
+    case "math":
+        return '1GOTJGp9yDIYecl3z0phmpp0V6Oqr0kls1d_TURNGBSs';
+        break;
+    case "cheer":
+        return '1fTXQLEeIg5ooY3x9aN31rEUwan5iZU2e55fTtl4UJTE';
+        break;
+    case "drivers-ed":
+        return '1BL1DjKr3ro9lP87-6R0ZbafXRaSXHwK5rawtKMSgQAo';
+        break;
+    case "fbla":
+        return '1HLNBnym6B3pxKGb1lc9xl3fxJgxpG_Mjg0KyWLiKTwk';
+        break;
+    case "latin-club":
+        return '1-6doxB2R9IKej636EcA7qnYdpVo4Ia9l4CIHYYbaMXs';
+        break;
+    case "spanish-club":
+        return '1rMF2Ph4fBFhtnj0aU-5gLPV7oL1ahRXFZEbaDREFtUQ';
+        break;
+    case "ping-pong":
+        return '1vq5ATv68fHsczeodp2nnpV2XEOueR0YE9EyMi0jyvXg';
+        break;
+    case "graduates":
+        return '1_s-wYK0exPEJN2zaKIcOmISVnAOIl1hDp4z4r2gZynM';
+        break;
+    case "jazz-chior":
+        return '1sEHqB8x1heOdD32sEIYQ-VBzAApObvzz203uZedisYo';
         break;
     default:
         return undefined
   }
 }
+
 
 function lookUpScheduleSelection(squad, schedule) {
 
@@ -128,7 +172,7 @@ exports.getActivityPictures = function(event, context, callback) {
 
           spreadsheetAccess.getGoogleSpreadsheetDataOneColumn(
                             spreadsheetID,
-                            2, // what sheet (tab) is wanted
+                            5, // what sheet (tab) is wanted
                             20, // how many rows to fetch
                             callback);
 
@@ -293,10 +337,16 @@ exports.getArtsAndActivitiesFromCalendar = function(event, context, callback) {
 
   console.log('Inside getArtsAndActivitiesFromCalendar');
 
+  console.log('pathParameters: ', event.pathParameters);
+
+  var activity = event.pathParameters.activity;
+
+  console.log('Activity is: ', activity);
+
   async.waterfall([
           function(callback) {
 
-          googleCalendarData.getGoogleActivitiesCalendarData(callback);
+          googleCalendarData.getGoogleActivitiesCalendarData(activity, callback);
         },
         function(scheduleArray, callback) {
           console.log('end of getGoogleActivitiesCalendarData Waterfall: ',scheduleArray);
@@ -321,14 +371,130 @@ exports.getArtsAndActivitiesFromCalendar = function(event, context, callback) {
         }
   ]);
 
-} //end of getTeamScheduleFromCalendar
+} //end of getArtsAndActivitiesFromCalendar
 
 
 
 
+exports.getAllArtsAndActivities = function(event, context, callback) {
+
+  console.log('Inside getAllArtsAndActivities');
+
+  async.waterfall([
+          function(callback) {
+
+          googleCalendarData.getAllGoogleActivitiesCalendarData(callback);
+        },
+        function(scheduleArray, callback) {
+
+          var scheduleObject = {};
+          scheduleObject.schedule = scheduleArray;
+
+          const res = {
+              "statusCode": 200,
+              "headers": {
+                'Content-Type': 'application/json',
+                "X-Requested-With": '*',
+                "Access-Control-Allow-Headers": 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers',
+                "Access-Control-Allow-Origin": '*',
+                "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
+              },
+              "body": JSON.stringify(scheduleObject) // body must be returned as a string
+            };
+
+          context.succeed(res);
+          callback();
+        }
+  ]);
+
+} //end of getAllArtsAndActivities
 
 
 
+// ***
+// Use this to look ahead for the first page summary on the apps.
+// ***
+exports.getAllCalendarDataSchedSummary = function(event, context, callback) {
+
+  console.log('Inside getAllCalendarDataSchedSummary');
+
+  console.log('query string parameters: ', event.queryStringParameters);
+
+  // *** TODO turn this on ***
+  //var numDaysLookAhead = event.pathParameters.numDays;
+  var numDaysLookAhead = 3;  // as in 3 days
+
+  async.waterfall([
+          function(callback) {
+
+          googleCalendarData.getSchedSummaryLookAhead(numDaysLookAhead, callback);
+        },
+        function(scheduleArray, callback) {
+
+          var scheduleObject = {};
+          scheduleObject.schedule = scheduleArray;
+
+          const res = {
+              "statusCode": 200,
+              "headers": {
+                'Content-Type': 'application/json',
+                "X-Requested-With": '*',
+                "Access-Control-Allow-Headers": 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers',
+                "Access-Control-Allow-Origin": '*',
+                "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
+              },
+              "body": JSON.stringify(scheduleObject) // body must be returned as a string
+            };
+
+          context.succeed(res);
+          callback();
+        }
+  ]);
+
+} //end of getAllCalendarDataSchedSummary
+
+
+
+// ***
+// Use this to get details for today and tomorrow.
+// ***
+exports.getDayDetails = function(event, context, callback) {
+
+  console.log('Inside getDayDetails');
+
+  console.log('query string parameters: ', event.queryStringParameters);
+
+  var today = moment();
+  var requestedDate = today.format('YYYY-MM-DD');  // just a placeholder.
+
+  async.waterfall([
+          function(callback) {
+
+          googleCalendarData.getDayDetails(requestedDate, callback);  // This is where the requested date would go
+        },
+        function(scheduleArray, callback) {
+
+          var scheduleObject = {};
+          scheduleObject.schedule = scheduleArray;
+
+          const res = {
+              "statusCode": 200,
+              "headers": {
+                'Content-Type': 'application/json',
+                "X-Requested-With": '*',
+                "Access-Control-Allow-Headers": 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers',
+                "Access-Control-Allow-Origin": '*',
+                "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
+              },
+              "body": JSON.stringify(scheduleObject) // body must be returned as a string
+            };
+
+          context.succeed(res);
+          callback();
+        }
+  ]);
+
+} //end of getDayDetails
 
 
 
@@ -528,7 +694,7 @@ exports.getVolunteerOpportunities = function(event, context, callback) {
 
         },
         function(spreadsheetData, callback) {
-          console.log('inside getSportAnnouncements Waterfall: ',spreadsheetData);
+          console.log('inside getVolunteerOpportunities Waterfall: ',spreadsheetData);
           context.succeed(spreadsheetData);
           callback();
         }
@@ -536,9 +702,9 @@ exports.getVolunteerOpportunities = function(event, context, callback) {
 } // getVolunteerOpportunities
 
 
-exports.getSportMercandiceLink = function(event, context, callback) {
+exports.getTryoutInfo = function(event, context, callback) {
 
-  console.log('Inside getSportMercandiceLink');
+  console.log('Inside getTryoutInfo');
 
   console.log('event: ', event);
   console.log('pathParameters: ', event.pathParameters);
@@ -553,7 +719,7 @@ exports.getSportMercandiceLink = function(event, context, callback) {
 
           spreadsheetAccess.getGoogleSpreadsheetDataOneColumn(
                             spreadsheetID,
-                            10, // what sheet (tab) is wanted
+                            4, // what sheet (tab) is wanted
                             2, // how many rows to fetch
                             callback);
 
@@ -564,7 +730,7 @@ exports.getSportMercandiceLink = function(event, context, callback) {
           callback();
         }
   ]);
-} // getSportMercandiceLink
+} // getTryoutInfo
 
 
 
@@ -718,7 +884,7 @@ exports.getListOfArtsActivities = function(event, context, callback) {
           callback();
         }
   ]);
-};
+};  // end of getListOfArtsActivities
 
 
 exports.getListOfClubs = function(event, context, callback) {
@@ -741,4 +907,4 @@ exports.getListOfClubs = function(event, context, callback) {
           callback();
         }
   ]);
-};
+};  // end of getListOfClubs

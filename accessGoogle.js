@@ -3,8 +3,15 @@
 
 'use strict';
 
+
+
 var PublicGoogleCalendar = require('public-google-calendar');
 var publicGoogleCalendar = new PublicGoogleCalendar({ calendarId: '9oounb9m5790te7qdeccr1acos@group.calendar.google.com' });
+
+var goldDayCalendar = new PublicGoogleCalendar({ calendarId: 'ajfretm1425r1u05fgvem49t8c@group.calendar.google.com' });
+var greenDayCalendar = new PublicGoogleCalendar({ calendarId: 'ajtvvqauv2vve92sso48bvr3bo@group.calendar.google.com' });
+var unifiedDayCalendar = new PublicGoogleCalendar({ calendarId: 'bishopblanchet.org_4e772o7r2nma870gmbiqmpjqlk@group.calendar.google.com' });
+var specialDayCalendar = new PublicGoogleCalendar({ calendarId: '50ul1lh5iev5tqfhl1cab6gke8@group.calendar.google.com' });
 
 var moment = require('moment');
 
@@ -78,8 +85,10 @@ function assignGender(summaryString) {
   }
 }
 
+// goldDayCalendar
 
-publicGoogleCalendar.getEvents(function(err, events) {
+//publicGoogleCalendar.getEvents(function(err, events) {
+unifiedDayCalendar.getEvents(function(err, events) {
   if (err) { return console.log(err.message); }
   // events is now array of all calendar events
   //console.log(events);
@@ -134,6 +143,8 @@ var sportsSchedule = [];
 
       currentEvent.sport = assignSport(event.summary);
 
+      currentEvent.rawStartTime = event.start;
+
       var startTimeObject = moment(event.start);
       var startTime = startTimeObject.format("h a");
       var endTimeObject = moment(event.end);
@@ -163,6 +174,10 @@ var sportsSchedule = [];
 
   //console.log(baseballSched);
   //console.log(jvBaseballSched);
+
+
+
+
   console.log(sportsSchedule);
 
 /*
@@ -172,4 +187,12 @@ var sportsSchedule = [];
   });
 */
 
+});
+
+
+
+
+unifiedDayCalendar.getEvents(function(err, events) {
+  console.log('gold day');
+  console.log(events);
 });

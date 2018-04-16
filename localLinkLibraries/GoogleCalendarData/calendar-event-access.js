@@ -11,6 +11,11 @@ var athleticsHomeCalendar = new PublicGoogleCalendar({ calendarId: 'mp1du636dvot
 var artsCalendar = new PublicGoogleCalendar({ calendarId: '43j670bpge31ga6sq6tvea58r4@group.calendar.google.com' });
 var activitiesCalendar = new PublicGoogleCalendar({ calendarId: '6m67tvpmmadgsg0cgplgehqo3c@group.calendar.google.com' });
 
+var goldDayCalendar = new PublicGoogleCalendar({ calendarId: 'ajfretm1425r1u05fgvem49t8c@group.calendar.google.com' });
+var greenDayCalendar = new PublicGoogleCalendar({ calendarId: 'ajtvvqauv2vve92sso48bvr3bo@group.calendar.google.com' });
+var unifiedDayCalendar = new PublicGoogleCalendar({ calendarId: '4e772o7r2nma870gmbiqmpjqlk@group.calendar.google.com' });
+var specialDayCalendar = new PublicGoogleCalendar({ calendarId: '50ul1lh5iev5tqfhl1cab6gke8@group.calendar.google.com' });
+
 var moment = require('moment');
 
 
@@ -57,12 +62,61 @@ function assignSport(summaryString) {
   } else if (lowerCaseSummaryString.indexOf("softball") >= 0) {
     return "softball";
   } else if (lowerCaseSummaryString.indexOf("soccer") >= 0) {
-    return "soccer";
+    return "boys-soccer";
+  } else if ((lowerCaseSummaryString.indexOf("soccer") >= 0) &&
+              (lowerCaseSummaryString.indexOf("girls") >= 0)) {
+    return "girls-soccer";
   } else if (lowerCaseSummaryString.indexOf("tennis") >= 0) {
     return "tennis";
-  } else if ((lowerCaseSummaryString.indexOf("lacrosse" >= 0)) ||
-              (lowerCaseSummaryString.indexOf("lax") >= 0)) {
-    return "lax";
+  } else if (((lowerCaseSummaryString.indexOf("lacrosse") >= 0) ||
+              (lowerCaseSummaryString.indexOf("lax") >= 0)) &&
+              (lowerCaseSummaryString.indexOf("boys") >= 0)) {
+    return "boys-lax";
+  } else if (((lowerCaseSummaryString.indexOf("lacrosse") >= 0) ||
+              (lowerCaseSummaryString.indexOf("lax") >= 0)) &&
+              (lowerCaseSummaryString.indexOf("girls") >= 0)) {
+    return "girls-lax";
+  } else {
+    return "undefined";
+  }
+}
+
+
+function assignClub(summaryString) {
+
+  var lowerCaseSummaryString = summaryString.toLowerCase();
+
+  if (lowerCaseSummaryString.indexOf("math") >= 0) {
+    return "math";
+  } else if (lowerCaseSummaryString.indexOf("cheer") >= 0) {
+    return "cheer";
+  } else if (lowerCaseSummaryString.indexOf("art") >= 0) {
+    return "art-club";
+  } else if (lowerCaseSummaryString.indexOf("drivers ed") >= 0) {
+    return "drivers-ed";
+  } else if (lowerCaseSummaryString.indexOf("dance team") >= 0) {
+    return "dance-team";
+  } else if (lowerCaseSummaryString.indexOf("fbla") >= 0) {
+    return "fbla";
+  } else if (lowerCaseSummaryString.indexOf("latin")  >= 0) {
+    return "latin-club";
+  } else if (lowerCaseSummaryString.indexOf("spanish")  >= 0) {
+    return "spanish-club";
+  } else if (lowerCaseSummaryString.indexOf("robot")  >= 0) {
+    return "robotics";
+  } else if (lowerCaseSummaryString.indexOf("ping pong")  >= 0) {
+    return "ping-pong";
+  } else if ((lowerCaseSummaryString.indexOf("seniors") >= 0) ||
+              (lowerCaseSummaryString.indexOf("graduates") >= 0) ||
+              (lowerCaseSummaryString.indexOf("last blast") >= 0) ||
+              (lowerCaseSummaryString.indexOf("graduation") >= 0)) {
+    return "graduates";
+  } else if ((lowerCaseSummaryString.indexOf("improv") >= 0) ||
+              (lowerCaseSummaryString.indexOf("costume") >= 0) ||
+              (lowerCaseSummaryString.indexOf("drama") >= 0) ||
+              (lowerCaseSummaryString.indexOf("musical") >= 0) ||
+              (lowerCaseSummaryString.indexOf("make up")  >= 0)) {
+    return "drama";
   } else {
     return "undefined";
   }
@@ -77,6 +131,8 @@ function assignGender(summaryString) {
     return "girls";
   } else if (lowerCaseSummaryString.indexOf("boys") >= 0) {
     return "boys";
+  } else if (lowerCaseSummaryString.indexOf("softball") >= 0) {
+    return "girls";
   } else {
     return "undefined";
   }
@@ -130,11 +186,12 @@ function GetGoogleCalendarData(sport,
   //    if ((year == "2018") && (month == "3") && (day == "10")) {
 
         currentEvent.sport = assignSport(event.summary);
+        currentEvent.club = assignClub(event.summary);
 
-        var startTimeObject = moment(event.start);
+        var startTimeObject = moment(event.start).utcOffset(-7);
         var startTime = startTimeObject.format("h a");
-        var eventDate = startTimeObject.format("MMMM DD");
-        var endTimeObject = moment(event.end);
+        var eventDate = startTimeObject.format("YYYY-MM-DD");
+        var endTimeObject = moment(event.end).utcOffset(-7);
         var endTime = endTimeObject.format("h a");
 
         currentEvent.squad = assignSquad(event.summary);
@@ -158,7 +215,7 @@ function GetGoogleCalendarData(sport,
 
   this.getSchoolActivitiesData = function(callback) {
 
-    console.log('inside getCalendarData');
+    console.log('inside getSchoolActivitiesData');
 
     activitiesCalendar.getEvents(function(err, events) {
       if (err) { return console.log(err.message); }
@@ -175,7 +232,7 @@ function GetGoogleCalendarData(sport,
 
   this.getArtCalendarData = function(callback) {
 
-    console.log('inside getCalendarData');
+    console.log('inside getArtCalendarData');
 
     artsCalendar.getEvents(function(err, events) {
       if (err) { return console.log(err.message); }
@@ -188,6 +245,80 @@ function GetGoogleCalendarData(sport,
     });
 
   } // end of this.getArtCalendarData
+
+
+
+  this.getGreenDayCalendarData = function(callback) {
+
+    console.log('inside getGreenDayCalendarData');
+
+    greenDayCalendar.getEvents(function(err, events) {
+      if (err) { return console.log(err.message); }
+
+      processCalenderData(self.schedule, events);
+
+      self.finalFilteredSchedule = self.schedule;  //TODO This is a shortcut!!!
+
+      callback();
+    });
+
+  } // end of this.getGreenDayCalendarData
+
+
+  this.getGoldDayCalendarData = function(callback) {
+
+    console.log('inside getGoldDayCalendarData');
+
+    goldDayCalendar.getEvents(function(err, events) {
+      if (err) { return console.log(err.message); }
+
+      processCalenderData(self.schedule, events);
+
+      self.finalFilteredSchedule = self.schedule;  //TODO This is a shortcut!!!
+
+      callback();
+    });
+
+  } // end of this.getGoldDayCalendarData
+
+
+
+  this.getUnifiedDayCalendarData = function(callback) {
+
+    console.log('inside getUnifiedDayCalendarData');
+
+    unifiedDayCalendar.getEvents(function(err, events) {
+      if (err) { return console.log(err.message); }
+
+      processCalenderData(self.schedule, events);
+
+      self.finalFilteredSchedule = self.schedule;  //TODO This is a shortcut!!!
+
+      callback();
+    });
+
+  } // end of this.getUnifiedDayCalendarData
+
+
+  this.getSpecialDayCalendarData = function(callback) {
+
+    console.log('inside getSpecialDayCalendarData');
+
+    specialDayCalendar.getEvents(function(err, events) {
+      if (err) { return console.log(err.message); }
+
+      processCalenderData(self.schedule, events);
+
+      self.finalFilteredSchedule = self.schedule;  //TODO This is a shortcut!!!
+
+      callback();
+    });
+
+  } // end of this.getSpecialDayCalendarData
+
+
+
+
 
 
 
@@ -227,21 +358,22 @@ function GetGoogleCalendarData(sport,
 
   this.filterTheSchedule = function(callback) {
 
+    console.log('inside filterTheSchedule');
+
+    console.log('sport: ', sport);
+    console.log('squad: ', squad);
+
+    console.log('before filter: ', self.schedule);
+
     self.sportFilteredSchedule = self.schedule.filter((eventInstance) =>
                                   eventInstance.sport == sport);
+
+    console.log('sportFilteredSchedule: ', self.sportFilteredSchedule);
 
     self.squadFilteredSchedule = self.sportFilteredSchedule.filter((eventInstance) =>
                                   eventInstance.squad == squad);
 
-    //BUGBUG: TODO: Nasty decision here.  Is undefined always boys?  I don't think so.  Ugh.  So I try to pass through.
-    if (gender == 'girls') {
-      self.genderFilteredSchedule = self.squadFilteredSchedule.filter((eventInstance) =>
-                                    eventInstance.gender == gender);
-    } else {
-      self.genderFilteredSchedule = self.squadFilteredSchedule;  // no gender filtering needed
-    }
-
-    self.finalFilteredSchedule = self.genderFilteredSchedule.filter((eventInstance) =>
+    self.finalFilteredSchedule = self.squadFilteredSchedule.filter((eventInstance) =>
                                   eventInstance.eventType == eventType);
 
     callback();
@@ -249,18 +381,113 @@ function GetGoogleCalendarData(sport,
 
 
 
+  this.filterTheScheduleForActivity = function(callback) {
+
+    console.log('inside filterTheScheduleForActivity');
+
+    console.log('Activity: ', sport);  // object calls first parameter "sport"
+
+    console.log('before filter: ', self.schedule);
+
+    self.activityFilteredSchedule = self.schedule.filter((eventInstance) =>
+                                  eventInstance.club == sport);
+
+    console.log('activityFilteredSchedule: ', self.activityFilteredSchedule);
+
+    self.finalFilteredSchedule = self.activityFilteredSchedule;
+
+    callback();
+  }
+
+
+
+  this.sortTheArray = function(callback) {
+
+    //self.finalFilteredSchedule = self.finalFilteredSchedule.reverse();
+
+    self.finalFilteredSchedule.sort(function(a,b){
+      // Turn your strings into dates, and then subtract them
+      // to get a value that is either negative, positive, or zero.
+      return new Date(a.eventDate) - new Date(b.eventDate);
+    });
+
+    callback();
+  }
+
+
+  this.getListOfAllActivities = function(callback) {
+
+    self.listOfUndefinedActivities = [];
+
+    console.log(self.finalFilteredSchedule);
+    console.log(self.finalFilteredSchedule[0]);
+
+    for (var i = 0;i<self.finalFilteredSchedule.length;i++) {
+
+        if (self.finalFilteredSchedule[i].club == 'undefined') {
+
+          console.log('summary: ', self.finalFilteredSchedule[i].summary);
+          self.listOfUndefinedActivities.push(self.finalFilteredSchedule[i].summary);
+
+        }
+//        console.log('club: ', eventInstance.club);
+
+    }
+
+    callback();
+  }
+
+
+  this.sendBackUndefinedActivities = function(callback) {
+
+    console.log('before assignment: ', self.finalFilteredSchedule);
+
+    self.finalFilteredSchedule = self.listOfUndefinedActivities;
+
+    console.log('after assignment: ', self.finalFilteredSchedule);
+
+    callback();
+  }
+
+
+
+
+
+  this.filterForNumberOfDays = function(callback) {
+
+    console.log('inside filterForNumberOfDays');
+
+    self.schedLookAhead = [];
+
+    var today = moment();
+    var tomorrow = moment().add(1, 'days');
+    var dayAfterTomorrow = moment().add(2, 'days');
+
+    console.log('Today: ', today.format('YYYY-MM-DD'));
+    console.log('Tomorrow: ', tomorrow.format('YYYY-MM-DD'));
+
+    self.schedLookAhead = self.schedule.filter((event) =>
+                            ((event.eventDate == today.format('YYYY-MM-DD')) ||
+                            (event.eventDate == tomorrow.format('YYYY-MM-DD')))  );
+
+    callback();
+  }
+
+
+
+  this.updateFinalResultsAfterFilter = function(callback) {
+
+    self.finalFilteredSchedule = self.schedLookAhead;
+
+    callback();
+  }
+
+
 
   this.callTheCallback = function(callback) {
 
     console.log('inside returnData');
 
-/*
-    var fakeEvent = {};
-    fakeEvent.startDate = "foobardate";
-    var fakeSchedule = [];
-    fakeSchedule.push(fakeEvent);
-    self.schedule = fakeSchedule;
-*/
     self.callerCallback(null, self.finalFilteredSchedule);
   }
 
@@ -294,6 +521,7 @@ exports.getGoogleSportsCalendarData = function(sport,
     getGoogleCalendarData.getSportsAwaySchedule,
     getGoogleCalendarData.getSportsHomeSchedule,
     getGoogleCalendarData.filterTheSchedule,
+    getGoogleCalendarData.sortTheArray,
     getGoogleCalendarData.callTheCallback
   ]
 );
@@ -302,9 +530,36 @@ exports.getGoogleSportsCalendarData = function(sport,
 
 
 
-exports.getGoogleActivitiesCalendarData = function(callerCallback) {
+exports.getGoogleActivitiesCalendarData = function(activity, callerCallback) {
 
   console.log('*** inside getGoogleActivitiesCalendarData ***');
+
+
+  var getGoogleCalendarData = new GetGoogleCalendarData(activity,
+                                                  null,
+                                                  null,
+                                                  null,
+                                                  callerCallback);
+
+  async.waterfall([
+
+    // IT ALL BEGINS HERE
+    getGoogleCalendarData.initialize,
+    getGoogleCalendarData.getSchoolActivitiesData,
+    getGoogleCalendarData.getArtCalendarData,
+    getGoogleCalendarData.filterTheScheduleForActivity,
+    getGoogleCalendarData.sortTheArray,
+    getGoogleCalendarData.callTheCallback
+  ]
+);
+
+}; // end of getGoogleActivitiesCalendarData
+
+
+
+exports.getAllGoogleActivitiesCalendarData = function(callerCallback) {
+
+  console.log('*** inside getAllGoogleActivitiesCalendarData ***');
 
 
   var getGoogleCalendarData = new GetGoogleCalendarData(null,
@@ -319,9 +574,75 @@ exports.getGoogleActivitiesCalendarData = function(callerCallback) {
     getGoogleCalendarData.initialize,
     getGoogleCalendarData.getSchoolActivitiesData,
     getGoogleCalendarData.getArtCalendarData,
-    //getGoogleCalendarData.filterTheSchedule,
+    getGoogleCalendarData.sortTheArray,
+    getGoogleCalendarData.getListOfAllActivities,
+    getGoogleCalendarData.sendBackUndefinedActivities,
     getGoogleCalendarData.callTheCallback
   ]
 );
 
-}; // end of getGoogleActivitiesCalendarData
+}; // end of getAllGoogleActivitiesCalendarData
+
+
+
+exports.getSchedSummaryLookAhead = function(numDays, callerCallback) {
+
+  console.log('*** inside getSchedSummaryLookAhead ***');
+  console.log('Look ahead this many days: ', numDays);  // <-- not hooked up currently
+
+
+  var getGoogleCalendarData = new GetGoogleCalendarData(null,
+                                                  null,
+                                                  null,
+                                                  null,
+                                                  callerCallback);
+
+  async.waterfall([
+
+    // IT ALL BEGINS HERE
+    getGoogleCalendarData.initialize,
+    getGoogleCalendarData.getSportsAwaySchedule,
+    getGoogleCalendarData.getSportsHomeSchedule,
+    getGoogleCalendarData.getSchoolActivitiesData,
+    getGoogleCalendarData.getArtCalendarData,
+    getGoogleCalendarData.getGreenDayCalendarData,
+    getGoogleCalendarData.getGoldDayCalendarData,
+    getGoogleCalendarData.getUnifiedDayCalendarData,
+    getGoogleCalendarData.getSpecialDayCalendarData,
+    getGoogleCalendarData.filterForNumberOfDays,
+    getGoogleCalendarData.updateFinalResultsAfterFilter,
+    getGoogleCalendarData.sortTheArray,
+    getGoogleCalendarData.callTheCallback
+  ]
+);
+
+}; // end of getSchedSummaryLookAhead
+
+
+exports.getDayDetails = function(date, callerCallback) {
+
+  console.log('*** inside getDayDetails ***');
+  console.log('Get date details for: ', date);
+
+  var getGoogleCalendarData = new GetGoogleCalendarData(null,
+                                                  null,
+                                                  null,
+                                                  null,
+                                                  callerCallback);
+
+  async.waterfall([
+
+    // IT ALL BEGINS HERE
+    getGoogleCalendarData.initialize,
+    getGoogleCalendarData.getGreenDayCalendarData,
+    getGoogleCalendarData.getGoldDayCalendarData,
+    getGoogleCalendarData.getUnifiedDayCalendarData,
+    getGoogleCalendarData.getSpecialDayCalendarData,
+    getGoogleCalendarData.filterForNumberOfDays,
+    getGoogleCalendarData.updateFinalResultsAfterFilter,
+    getGoogleCalendarData.sortTheArray,
+    getGoogleCalendarData.callTheCallback
+  ]
+);
+
+}; // end of getDayDetails

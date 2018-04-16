@@ -20,7 +20,7 @@ service: BBHS-Communications-Platform # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs6.10
-  timeout: 20
+  timeout: 40
   region: us-west-2
 #  memorySize: 3008
 
@@ -62,11 +62,36 @@ provider:
 
 functions:
 
+
+  getDayDetails:
+    handler: bbhsHandler.getDayDetails
+    events:
+            - http:
+                path: /day-details
+                method: get
+
+
+  getAllCalendarDataSchedSummary:
+    handler: bbhsHandler.getAllCalendarDataSchedSummary
+    events:
+            - http:
+                path: /sched-sneak-peek
+                method: get
+
+
+  getAllActivitiesFromCalendar:
+    handler: bbhsHandler.getAllArtsAndActivities
+    events:
+            - http:
+                path: /sports/activities-schedule
+                method: get
+
+
   getActivityFromCalendar:
     handler: bbhsHandler.getArtsAndActivitiesFromCalendar
     events:
             - http:
-                path: /sports/activities-schedule
+                path: /sports/activities-schedule/{activity}
                 method: get
 
 
@@ -116,18 +141,20 @@ functions:
                 path: /sports/roster/{sport}
                 method: get
 
-  getSportMercandiceLink:
-    handler: bbhsHandler.getSportMercandiceLink
-    events:
-            - http:
-                path: /sports/merch/{sport}
-                method: get
 
   getSportAnnouncement:
     handler: bbhsHandler.getSportAnnouncement
     events:
             - http:
                 path: /sports/announcement/{sport}
+                method: get
+
+
+  getSportTryoutInfo:
+    handler: bbhsHandler.getTryoutInfo
+    events:
+            - http:
+                path: /sports/tryouts/{sport}
                 method: get
 
   getSport:
