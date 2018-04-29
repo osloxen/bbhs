@@ -3,6 +3,8 @@
 
 'use strict';
 
+process.env.TZ = 'America/Los_Angeles';
+
 var async = require('async');
 var cleanArray = require('clean-array');
 var moment = require('moment');

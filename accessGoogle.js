@@ -14,7 +14,7 @@ var unifiedDayCalendar = new PublicGoogleCalendar({ calendarId: 'bishopblanchet.
 var specialDayCalendar = new PublicGoogleCalendar({ calendarId: '50ul1lh5iev5tqfhl1cab6gke8@group.calendar.google.com' });
 
 var moment = require('moment');
-
+var momentTZ = require('moment-timezone');
 
 
 function awayOrHome(summaryString) {
@@ -88,7 +88,7 @@ function assignGender(summaryString) {
 // goldDayCalendar
 
 //publicGoogleCalendar.getEvents(function(err, events) {
-unifiedDayCalendar.getEvents(function(err, events) {
+goldDayCalendar.getEvents(function(err, events) {
   if (err) { return console.log(err.message); }
   // events is now array of all calendar events
   //console.log(events);
@@ -178,7 +178,7 @@ var sportsSchedule = [];
 
 
 
-  console.log(sportsSchedule);
+  //console.log(sportsSchedule);
 
 /*
   var marchEventFound = events.find(function (event) {
@@ -192,7 +192,84 @@ var sportsSchedule = [];
 
 
 
-unifiedDayCalendar.getEvents(function(err, events) {
+// Use this function to determine if it is a green or gold or unified day.
+  function processTypeOfDay(arrayToPopulate, events) {
+
+    console.log('inside processTypeOfDay');
+
+    console.log(events[0]);
+
+    events.forEach(function (event) {
+
+      var dateOfEvent = null;
+
+      if (event.rawStartTime != undefined) {
+        dateOfEvent = momentTZ(event.rawStartTime).tz("America/Los_Angeles").subtract(1, 'days');
+      } else {
+        dateOfEvent = momentTZ(event.start).tz("America/Los_Angeles").subtract(1, 'days');
+      }
+
+      var year = dateOfEvent.format('Y');
+      var month = dateOfEvent.format('M');
+      var day = dateOfEvent.format('D');
+
+      var currentEvent = {};
+
+  //    if (year == "2018") {
+      if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
+//        if ((year == "2018") && ((month == "4"))) {
+  //    if ((year == "2018") && (month == "3") && (day == "10")) {
+
+
+        var today = momentTZ().tz("America/Los_Angeles");
+
+        if (event.rawStartTime != undefined) {
+          var startTimeObject = momentTZ(event.rawStartTime).tz("America/Los_Angeles").subtract(12, 'hours');
+        } else {
+          var startTimeObject = momentTZ(event.start).tz("America/Los_Angeles").subtract(12, 'hours');
+        }
+
+        var eventDate = startTimeObject.format("YYYY-MM-DD");
+
+        currentEvent.eventDate = eventDate;
+        currentEvent.summary = event.summary;
+
+        arrayToPopulate.push(currentEvent);
+      }
+
+    });
+
+  }  // end of processTypeOfDay
+
+
+var goldDaysSchedule = [];
+var greenDaysSchedule = [];
+var unifiedDaysSchedule = [];
+
+goldDayCalendar.getEvents(function(err, events) {
   console.log('gold day');
-  console.log(events);
+
+  processTypeOfDay(goldDaysSchedule, events)
+  console.log('Gold: ', goldDaysSchedule);
 });
+
+
+// greenDayCalendar.getEvents(function(err, events) {
+//   console.log('green days');
+//
+//   processTypeOfDay(greenDaysSchedule, events)
+//   console.log('Green: ', greenDaysSchedule);
+//
+// });
+
+// unifiedDayCalendar.getEvents(function(err, events) {
+//   console.log('unfied  days');
+//
+//   processTypeOfDay(unifiedDaysSchedule, events)
+//   console.log('********************');
+//   console.log('Unified: ', unifiedDaysSchedule);
+//
+// });
+//
+// var allTypesOfDays = goldDaysSchedule.concat(greenDaysSchedule);
+// console.log('allTypesOfDays: ', allTypesOfDays);

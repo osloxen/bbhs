@@ -11,7 +11,7 @@
 #
 # Happy Coding!
 
-service: BBHS-Communications-Platform # NOTE: update this with your service name
+service: BBHS-Service # NOTE: update this with your service name
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -28,37 +28,8 @@ provider:
 #  stage: prodGreen
 #  stage: prodBlue
 
-# you can overwrite defaults here
 
 
-# you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
-
-# you can define service wide environment variables here
-#  environment:
-#    variable1: value1
-
-# you can add packaging information here
-#package:
-#  include:
-#    - bbhsHandler.js
-#    - ../npmLibraries/SpreadsheetAccess/**
-#  exclude:
-#    - exclude-me.js
-#    - exclude-me-dir/**
 
 functions:
 
@@ -71,7 +42,7 @@ functions:
                 method: get
 
 
-  getAllCalendarDataSchedSummary:
+  getScheduleSneakPeek:
     handler: bbhsHandler.getAllCalendarDataSchedSummary
     events:
             - http:
@@ -79,11 +50,11 @@ functions:
                 method: get
 
 
-  getAllActivitiesFromCalendar:
+  getAllActivities:
     handler: bbhsHandler.getAllArtsAndActivities
     events:
             - http:
-                path: /sports/activities-schedule
+                path: /activities/activities-schedule
                 method: get
 
 
@@ -91,15 +62,15 @@ functions:
     handler: bbhsHandler.getArtsAndActivitiesFromCalendar
     events:
             - http:
-                path: /sports/activities-schedule/{activity}
+                path: /activities/schedule/{activity}
                 method: get
 
 
-  getSportsScheduleFromCalendar:
+  getSportsTeamSchedule:
     handler: bbhsHandler.getTeamScheduleFromCalendar
     events:
             - http:
-                path: /sports/calendar-schedule/{sport}
+                path: /sports/schedule/{sport}
                 method: get
 
 
@@ -126,12 +97,12 @@ functions:
                 method: get
 
 
-  getTeamSchedule:
-    handler: bbhsHandler.getTeamSchedule
-    events:
-            - http:
-                path: /sports/schedule/{sport}
-                method: get
+  # getTeamSchedule:
+  #   handler: bbhsHandler.getTeamSchedule
+  #   events:
+  #           - http:
+  #               path: /sports/schedule/{sport}
+  #               method: get
 
 
   getTeamRoster:
