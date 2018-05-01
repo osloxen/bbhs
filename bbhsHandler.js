@@ -273,6 +273,68 @@ exports.getActivityKey = function(event, context, callback) {
 
 
 
+exports.getActivitySchedule = function(event, context, callback) {
+
+  console.log('Inside getActivitySchedule');
+
+  console.log('event: ', event);
+  console.log('pathParameters: ', event.pathParameters);
+  console.log('query string parameters: ', event.queryStringParameters);
+
+  if (event.pathParameters.activity != undefined) {
+    var activity = event.pathParameters.activity;
+  }
+  var squad = event.queryStringParameters.squad;
+  var gender = event.queryStringParameters.gender;
+  var eventType = "game";
+
+  if (event.queryStringParameters.eventType != undefined) {  // if left off parameters just get games
+    eventType = event.queryStringParameters.eventType;
+  }
+
+  console.log('sport: ', sportName);
+  console.log('squad: ', squad);
+  console.log('gender: ', gender);
+  console.log('event type: ', eventType);
+
+  async.waterfall([
+          function(callback) {
+
+          googleCalendarData.getGoogleSportsCalendarData(
+                            sportName,
+                            squad, // varsity, jv or freshman
+                            gender,
+                            eventType, // game or practice (or both???)
+                            callback);
+        },
+        function(scheduleArray, callback) {
+          console.log('end of getGoogleSportsCalendarData Waterfall: ',scheduleArray);
+
+          var scheduleObject = {};
+          scheduleObject.schedule = scheduleArray;
+
+          const res = {
+              "statusCode": 200,
+              "headers": {
+                'Content-Type': 'application/json',
+                "X-Requested-With": '*',
+                "Access-Control-Allow-Headers": 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers',
+                "Access-Control-Allow-Origin": '*',
+                "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
+              },
+              "body": JSON.stringify(scheduleObject) // body must be returned as a string
+            };
+
+          context.succeed(res);
+          callback();
+        }
+  ]);
+
+} //end of getActivitySchedule
+
+
+
+
 
 exports.getTeamScheduleFromCalendar = function(event, context, callback) {
 
@@ -466,8 +528,14 @@ exports.getDayDetails = function(event, context, callback) {
 
   console.log('query string parameters: ', event.queryStringParameters);
 
-  var today = moment();
-  var requestedDate = today.format('YYYY-MM-DD');  // just a placeholder.
+  var requestedDate = null;
+
+  if (event.queryStringParameters == undefined) {
+    var today = moment();
+    requestedDate = today.format('YYYY-MM-DD');  // just a placeholder.
+  } else {
+    requestedDate = event.queryStringParameters.date;
+  }
 
   async.waterfall([
           function(callback) {

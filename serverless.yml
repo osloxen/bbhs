@@ -34,6 +34,12 @@ provider:
 functions:
 
 
+  blanchetAlexaSkill:
+    handler: bbhs-alexa.handler
+    events:
+      - alexaSkill
+
+
   getDayDetails:
     handler: bbhsHandler.getDayDetails
     events:

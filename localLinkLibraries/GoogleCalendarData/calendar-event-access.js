@@ -77,6 +77,8 @@ function assignSport(summaryString) {
               (lowerCaseSummaryString.indexOf("lax") >= 0)) &&
               (lowerCaseSummaryString.indexOf("girls") >= 0)) {
     return "girls-lax";
+  } else if (lowerCaseSummaryString.indexOf("cheer") >= 0) {
+    return "cheer";
   } else {
     return "undefined";
   }
@@ -142,7 +144,7 @@ function assignGender(summaryString) {
 
 
 
-function GetGoogleCalendarData(sport,
+function GetGoogleCalendarData( sport,
                                 squad,
                                 gender,
                                 eventType,
@@ -163,6 +165,7 @@ function GetGoogleCalendarData(sport,
     self.schedule = [];
     self.goldDaysSchedule = [];
     self.greenDaysSchedule = [];
+    self.alexaResponse = null;
 
     callback();
   };
