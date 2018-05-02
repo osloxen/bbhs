@@ -128,6 +128,8 @@ const handlers = {
 
       console.log('from Alexa: ', this.event.request.intent.slots);
 
+      var filledSlots = delegateSlotCollection.call(this);
+
       var sport = processSport(this.event.request.intent.slots.list_of_sports.value);
       var squad = processSquad(this.event.request.intent.slots.squadlevel.value);
       var eventType = this.event.request.intent.slots.eventtype.value;
@@ -154,18 +156,24 @@ const handlers = {
                     var eventDate = moment(o.eventDate);
                     return moment().diff(eventDate, 'days') <= 0; });
 
+              var speechOutput = "I checked the school calendar. ";
+
               if (foundFirstInstance != undefined) {
-                self.emit(':tell', 'Here is what I found. ' +
+                speechOutput += 'Here is what I found. ' +
                           'The next ' + sport + ' ' + eventType + ' is on ' + foundFirstInstance.eventDate +
                           ' ' + foundFirstInstance.summary +
                           '. The event starts at ' + foundFirstInstance.startTime +
                           ' and ends at ' + foundFirstInstance.endTime +
-                          '. The location is ' + foundFirstInstance.location);
+                          '. The location is ' + foundFirstInstance.location;
+                self.response.speak(speechOutput);
+                self.emit(":responseReady");
               } else {
-                self.emit(':tell', 'I did not find anything on the schedule. ' +
+                speechOutput += 'I did not find anything on the schedule. ' +
                           'If you are looking for a playoff game try again soon. ' +
                           'If not then it may be that ' + sport + ' is out of season ' +
-                          'or the season is too new and I do not have the schedule yet.');
+                          'or the season is too new and I do not have the schedule yet.';
+                self.response.speak(speechOutput);
+                self.emit(":responseReady");          
               }
 
 
@@ -261,3 +269,25 @@ exports.handler = (event, context) => {
     alexa.registerHandlers(handlers);
     alexa.execute();
 };
+
+
+function delegateSlotCollection(){
+
+  console.log('in delegateSlotCollection');
+  console.log('current dialogState: ', this.event.request.dialogState);
+
+  if (this.event.request.dialogState === "STARTED") {
+    console.log('In Beginning');
+    // Optionally pre-fill slots.
+    var updatedIntent = this.event.request.intent;
+    this.emit(":delegate", updatedIntent);
+  } else if (this.event.request.dialogState !== "COMPLETED") {
+    console.log("in not completed slots state");
+    this.emit(":delegate");
+  } else {
+    console.log("in completed");
+    console.log("returning: ", JSON.stringify(this.event.request.intent));
+    return this.event.request.intent;
+  }
+
+} // end of delegateSlotCollection
