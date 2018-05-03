@@ -143,7 +143,7 @@ const handlers = {
 
       var activityFilledSlots = delegateSlotCollection.call(this);
 
-      var activity = processSport(this.event.request.intent.slots.list_of_activities.value);
+      var activity = processSport(this.event.request.intent.slots.activity.value);
 
       var activityScheduleUrl = "https://qnofocfk6k.execute-api.us-west-2.amazonaws.com/dev/activities/schedule/"
       activityScheduleUrl += convertActivityToUrlParameter(activity);
@@ -170,7 +170,7 @@ const handlers = {
 
               if (foundFirstInstance != undefined) {
                 speechOutput += 'Here is what I found. ' +
-                          'The next ' + activity + 'event is on ' + foundFirstInstance.eventDate +
+                          'The next ' + activity + ' event is on ' + foundFirstInstance.eventDate +
                           ' ' + foundFirstInstance.summary +
                           '. The event starts at ' + foundFirstInstance.startTime +
                           ' and ends at ' + foundFirstInstance.endTime +
