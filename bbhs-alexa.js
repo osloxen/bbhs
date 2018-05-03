@@ -45,6 +45,18 @@ function getGradeFromInput(input) {
 }
 
 
+function convertActivityToUrlParameter(sport) {
+
+  switch (sport) {
+    case "random example":
+        return "fbla";
+        break;
+    default:
+        return sport;
+  }
+} // end of convertSportToUrlParameter
+
+
 function convertSportToUrlParameter(sport) {
 
   switch (sport) {
@@ -123,6 +135,60 @@ const handlers = {
             });
         });
     },
+    'activityinfointent': function () {
+      var self = this;
+
+      console.log('inside activityinfointent');
+      console.log('from Alexa: ', this.event.request.intent.slots);
+
+      var activityFilledSlots = delegateSlotCollection.call(this);
+
+      var activity = processSport(this.event.request.intent.slots.list_of_activities.value);
+
+      var activityScheduleUrl = "https://qnofocfk6k.execute-api.us-west-2.amazonaws.com/dev/activities/schedule/"
+      activityScheduleUrl += convertActivityToUrlParameter(activity);
+
+      console.log('Activity url used is: ', activityScheduleUrl);
+
+      https.get(activityScheduleUrl, function(res) {
+          console.log("Got response: " + res.statusCode);
+
+          res.on('data', (d) => {
+              process.stdout.write(d);
+              var data = JSON.parse(d);
+              console.log('Data is: ' + JSON.stringify(data));
+
+              var scheduleInfo = data;
+
+              var foundFirstInstance = _.find(scheduleInfo.schedule,
+                  function(o) {
+                    //var today = moment();
+                    var eventDate = moment(o.eventDate);
+                    return moment().diff(eventDate, 'days') <= 0; });
+
+              var speechOutput = "I checked the school calendar. ";
+
+              if (foundFirstInstance != undefined) {
+                speechOutput += 'Here is what I found. ' +
+                          'The next ' + activity + 'event is on ' + foundFirstInstance.eventDate +
+                          ' ' + foundFirstInstance.summary +
+                          '. The event starts at ' + foundFirstInstance.startTime +
+                          ' and ends at ' + foundFirstInstance.endTime +
+                          '. The location is ' + foundFirstInstance.location;
+                self.response.speak(speechOutput);
+                self.emit(":responseReady");
+              } else {
+                speechOutput += 'I did not find anything on the schedule. ' +
+                          'Ask your representative for this club or activity ' +
+                          'to make sure the entire schedule is on the school calendar.';
+                self.response.speak(speechOutput);
+                self.emit(":responseReady");
+              }
+
+
+            });
+        });
+    }, // end of activityinfointent
     'sportsinfointent': function () {
       var self = this;
 
@@ -173,75 +239,13 @@ const handlers = {
                           'If not then it may be that ' + sport + ' is out of season ' +
                           'or the season is too new and I do not have the schedule yet.';
                 self.response.speak(speechOutput);
-                self.emit(":responseReady");          
+                self.emit(":responseReady");
               }
 
 
             });
         });
-
-
-
-/*
-
-      if (this.event.request.intent.slots.list_of_sports.value == undefined ||
-          this.event.request.intent.slots.squadlevel.value == undefined ||
-          this.event.request.intent.slots.eventtype.value == undefined) {
-
-        this.emit(':tell', 'You did not give me all the information I need ' +
-                  'to process your request.  I need to know what sport, ' +
-                  'what competition level, for example varsity, and the type of event. ' +
-                  'An event type is usually a game or practice. ');
-      } else {
-
-        var sport = processSport(this.event.request.intent.slots.list_of_sports.value);
-        var squad = processSquad(this.event.request.intent.slots.squadlevel.value);
-        var eventType = this.event.request.intent.slots.eventtype.value;
-
-        var sportsScheduleUrl = "https://qnofocfk6k.execute-api.us-west-2.amazonaws.com/dev/sports/schedule/"
-        sportsScheduleUrl = sportsScheduleUrl + convertSportToUrlParameter(sport);
-        sportsScheduleUrl = sportsScheduleUrl + "?squad=" + squad;
-        sportsScheduleUrl = sportsScheduleUrl + "&eventType=" + eventType;
-        console.log('Sports url used is: ', sportsScheduleUrl);
-
-        https.get(sportsScheduleUrl, function(res) {
-            console.log("Got response: " + res.statusCode);
-
-            res.on('data', (d) => {
-                process.stdout.write(d);
-                var data = JSON.parse(d);
-                console.log('Data is: ' + JSON.stringify(data));
-
-                var scheduleInfo = data;
-
-                var foundFirstInstance = _.find(scheduleInfo.schedule,
-                    function(o) {
-                      //var today = moment();
-                      var eventDate = moment(o.eventDate);
-                      return moment().diff(eventDate, 'days') <= 0; });
-
-                if (foundFirstInstance != undefined) {
-                  self.emit(':tell', 'Here is what I found. ' +
-                            'The next ' + sport + ' ' + eventType + ' is on ' + foundFirstInstance.eventDate +
-                            ' ' + foundFirstInstance.summary +
-                            '. The event starts at ' + foundFirstInstance.startTime +
-                            ' and ends at ' + foundFirstInstance.endTime +
-                            '. The location is ' + foundFirstInstance.location);
-                } else {
-                  self.emit(':tell', 'I did not find anything on the schedule. ' +
-                            'If you are looking for a playoff game try again soon. ' +
-                            'If not then it may be that ' + sport + ' is out of season ' +
-                            'or the season is too new and I do not have the schedule yet.');
-                }
-
-
-              });
-          });
-      } // end of else
-*/
-
-
-    },
+    },  // end of sportsinfointent
     'AMAZON.HelpIntent': function () {
         const speechOutput = 'I appreciate you asking for help.  Make your question as ' +
             'simple as possible.  For example say something like: Alexa ask Blanchet ' +
