@@ -45,14 +45,14 @@ function getGradeFromInput(input) {
 }
 
 
-function convertActivityToUrlParameter(sport) {
+function convertActivityToUrlParameter(activity) {
 
-  switch (sport) {
+  switch (activity) {
     case "random example":
         return "fbla";
         break;
     default:
-        return sport;
+        return activity;
   }
 } // end of convertSportToUrlParameter
 
@@ -103,6 +103,31 @@ const handlers = {
                     'You can ask questions like:  What type of day is today? '
                     , 'Hi!  You are in the Bishop Blanchet app.  You can ask me ' +
                     'about what kind of day it is, sports, clubs and the arts.');
+    },
+    'dailySummary': function () {
+      var self = this;
+
+      console.log('inside dailySummary');
+      console.log('from Alexa: ', this.event.request);
+
+      var dailySummaryUrl = 'https://qnofocfk6k.execute-api.us-west-2.amazonaws.com/dev/sched-sneak-peek';
+
+      https.get(dailySummaryUrl, function(res) {
+          console.log("Got response: " + res.statusCode);
+
+          res.on('data', (d) => {
+              process.stdout.write(d);
+              var data = JSON.parse(d);
+              console.log('Data is: ' + JSON.stringify(data));
+
+              var numEventsToday = data.schedule.length;
+
+              self.emit(':ask','There are ' + numEventsToday + ' events today. ' +
+                        'Would you like me to tell you what they are?', 'Do you ' +
+                        'want to hear the ' + numEventsToday + ' events?');
+
+            });
+        });
     },
     'datetypeintent': function () {
       var self = this;
