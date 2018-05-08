@@ -110,6 +110,8 @@ const handlers = {
       console.log('inside dailySummary');
       console.log('from Alexa: ', this.event.request);
 
+      this.emit(':tell','Please wait while I look that up for you.');
+
       var dailySummaryUrl = 'https://qnofocfk6k.execute-api.us-west-2.amazonaws.com/dev/sched-sneak-peek';
 
       https.get(dailySummaryUrl, function(res) {
@@ -125,6 +127,8 @@ const handlers = {
               self.emit(':ask','There are ' + numEventsToday + ' events today. ' +
                         'Would you like me to tell you what they are?', 'Do you ' +
                         'want to hear the ' + numEventsToday + ' events?');
+
+
 
             });
         });
@@ -286,6 +290,14 @@ const handlers = {
     'AMAZON.StopIntent': function () {
         this.emit(':tell', 'I will now stop.  I have stopped.  Totally stopped here. ' +
                 'I am now opposite of go.  Which is stopped.  I know when I need to stop.');
+    },
+    'AMAZON.YesIntent': function () {
+        console.log('Yes intent - object is: ', this.event.request);
+        this.emit(':tell', 'This is the YES intent.' );
+    },
+    'AMAZON.NoIntent': function () {
+        console.log('No intent - object is: ', this.event.request);
+        this.emit(':tell', 'This is the NO intent.');
     },
     'SessionEndedRequest': function () {
         this.emit(':tell', 'Session is now ended.  I will be here when you need me. ');
