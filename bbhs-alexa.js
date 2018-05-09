@@ -16,12 +16,9 @@ var tomorrow = moment().add(1,'d');
 tomorrow = tomorrow.format('YYYY-MM-DD');
 
 
-// 'STAFFINFO'
 var state = null;
-var currentStaffMember = {};
-var currentEvent = {};
-var currentClass = {};
 
+var sessionAttributes = {};
 
 //var url = "https://afe1vbusyj.execute-api.us-east-1.amazonaws.com/beta/mydemoresource";
 //var urlSchoolData = "https://afe1vbusyj.execute-api.us-east-1.amazonaws.com/beta/st-catherine-name";
@@ -96,6 +93,9 @@ function processSquad(squadFromAlexa) {
 }
 
 
+// sportDailySummary
+// clubDailySummary
+// specialEventDailySummary
 
 const handlers = {
     'LaunchRequest': function () {
@@ -104,13 +104,110 @@ const handlers = {
                     , 'Hi!  You are in the Bishop Blanchet app.  You can ask me ' +
                     'about what kind of day it is, sports, clubs and the arts.');
     },
+    'sportDailySummary': function () {
+
+        console.log('sports today: ', sessionAttributes.sportsToday);
+
+        var speechOutput = "Sports today are as follows. ";
+
+        if (sessionAttributes.sportsToday == 0) {
+          speechOutput += "There are no sports events today. Do you want to hear about clubs or special events?";
+          this.emit(':ask', speechOutput);
+        } else {
+          var stopAtIndex = 3;
+          var finishedAllSports = false;
+          if (sessionAttributes.sportsToday.length < 3) {
+            stopAtIndex = sessionAttributes.sportsToday.length;
+            finishedAllSports = true;
+          }
+          for (var i=0;i<3;i++) {
+            console.log('speechOutput: ', speechOutput);
+            speechOutput += sessionAttributes.sportsToday[i].sport;
+            speechOutput += " " + "is at " + sessionAttributes.sportsToday[i].startTime;
+            speechOutput += " " + "at " + sessionAttributes.sportsToday[i].location;
+            speechOutput += ". ";
+          }
+          if (!finishedAllSports) {
+            speechOutput += "Check the iOS app for all of today\'s events. ";
+          }
+          speechOutput += "Do you want to hear about clubs or special events?";
+          this.emit(':ask', speechOutput);
+        }
+
+    },
+    'clubDailySummary': function () {
+
+      console.log('clubs today: ', sessionAttributes.clubsToday);
+
+      var speechOutput = "Here are the first 3 club events. ";
+
+      if (sessionAttributes.clubsToday == 0) {
+        speechOutput += "There are no club events today. Do you want to hear about clubs or special events?";
+        this.emit(':ask', speechOutput);
+      } else {
+        var stopAtIndex = 3;
+        var finishedAllClubs = false;
+        if (sessionAttributes.clubsToday.length < 3) {
+          stopAtIndex = sessionAttributes.clubsToday.length;
+          finishedAllClubs = true;
+        }
+        for (var i=0;i<3;i++) {
+          console.log('speechOutput: ', speechOutput);
+          speechOutput += sessionAttributes.clubsToday[i].club;
+          speechOutput += " " + "is at " + sessionAttributes.clubsToday[i].startTime;
+          speechOutput += " " + "at " + sessionAttributes.clubsToday[i].location;
+          speechOutput += ". ";
+
+        }
+        if (!finishedAllClubs) {
+          speechOutput += "Check the iOS app for all of today\'s events. ";
+        }
+        speechOutput += ""
+        speechOutput += "Do you want to hear about sports or special events?";
+        this.emit(':ask', speechOutput);
+      }
+
+    },
+    'specialEventDailySummary': function () {
+
+      console.log('special events today: ', sessionAttributes.clubsToday);
+
+      var speechOutput = "Here are the first 3 special events. ";
+
+      if (sessionAttributes.specialEventsToday == 0) {
+        speechOutput += "There are no special events today. Do you want to hear about clubs or sports?";
+        this.emit(':ask', speechOutput);
+      } else {
+        var stopAtIndex = 3;
+        var finishedAllClubs = false;
+        if (sessionAttributes.specialEventsToday.length < 3) {
+          stopAtIndex = sessionAttributes.specialEventsToday.length;
+          finishedAllClubs = true;
+        }
+        for (var i=0;i<3;i++) {
+          console.log('speechOutput: ', speechOutput);
+          speechOutput += sessionAttributes.specialEventsToday[i].summary;
+          speechOutput += " " + "is at " + sessionAttributes.clubsToday[i].startTime;
+          speechOutput += " " + "at " + sessionAttributes.clubsToday[i].location;
+          speechOutput += ". ";
+
+        }
+        if (!finishedAllClubs) {
+          speechOutput += "Check the iOS app for all of today\'s events. ";
+        }
+        speechOutput += ""
+        speechOutput += "Do you want to hear about sports or clubs?";
+        this.emit(':ask', speechOutput);
+      }
+    },
     'dailySummary': function () {
       var self = this;
 
       console.log('inside dailySummary');
-      console.log('from Alexa: ', this.event.request);
+      console.log('from Alexa: ', this.event);
 
-      this.emit(':tell','Please wait while I look that up for you.');
+      // TODO: everything stops if I use this.
+      //this.emit(':tell','Please wait while I look that up for you.');
 
       var dailySummaryUrl = 'https://qnofocfk6k.execute-api.us-west-2.amazonaws.com/dev/sched-sneak-peek';
 
@@ -122,14 +219,34 @@ const handlers = {
               var data = JSON.parse(d);
               console.log('Data is: ' + JSON.stringify(data));
 
+              sessionAttributes.scheduleToday = data;
+              sessionAttributes.lastIntent = 'SUMMARYOFTODAY';
+
               var numEventsToday = data.schedule.length;
 
+              sessionAttributes.sportsToday = _.filter(data.schedule, function(o) {
+                return o.sport != "undefined";
+              });
+
+              sessionAttributes.clubsToday = _.filter(data.schedule, function(o) {
+                return o.club != "undefined";
+              });
+
+              sessionAttributes.specialEventsToday = _.filter(data.schedule, function(o) {
+                return o.sport == "undefined" && o.club == "undefined";
+              })
+
+              console.log('sports: ', sessionAttributes.sportsToday);
+              console.log('clubs: ', sessionAttributes.clubsToday);
+              console.log('special events: ', sessionAttributes.specialEventsToday);
+
               self.emit(':ask','There are ' + numEventsToday + ' events today. ' +
-                        'Would you like me to tell you what they are?', 'Do you ' +
-                        'want to hear the ' + numEventsToday + ' events?');
-
-
-
+                        sessionAttributes.sportsToday.length + ' are sports. ' +
+                        sessionAttributes.clubsToday.length + ' are clubs. ' +
+                        sessionAttributes.specialEventsToday.length + ' are special events today. ' +
+                        'Would you like me to tell you what they are? ' +
+                        'Just say sports, clubs or special events.', 'Do you ' +
+                        'want to hear the events?  If so please say sports, clubs or special events.');
             });
         });
     },
@@ -292,12 +409,16 @@ const handlers = {
                 'I am now opposite of go.  Which is stopped.  I know when I need to stop.');
     },
     'AMAZON.YesIntent': function () {
-        console.log('Yes intent - object is: ', this.event.request);
-        this.emit(':tell', 'This is the YES intent.' );
+        console.log('Yes intent - object is: ', this.event);
+        console.log('Session Attributes: ', JSON.stringify(sessionAttributes));
+
+        var speechOutput = "OK.";
     },
     'AMAZON.NoIntent': function () {
-        console.log('No intent - object is: ', this.event.request);
-        this.emit(':tell', 'This is the NO intent.');
+        console.log('No intent - object is: ', this.event);
+        console.log('Session Attributes: ', JSON.stringify(sessionAttributes));
+
+        this.emit(':tell', 'OK.');
     },
     'SessionEndedRequest': function () {
         this.emit(':tell', 'Session is now ended.  I will be here when you need me. ');
