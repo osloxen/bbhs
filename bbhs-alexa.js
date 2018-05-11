@@ -20,22 +20,6 @@ var state = null;
 
 var sessionAttributes = {};
 
-//var url = "https://afe1vbusyj.execute-api.us-east-1.amazonaws.com/beta/mydemoresource";
-//var urlSchoolData = "https://afe1vbusyj.execute-api.us-east-1.amazonaws.com/beta/st-catherine-name";
-//var urlFacultyInfo = "https://afe1vbusyj.execute-api.us-east-1.amazonaws.com/beta/st-catherine-school/faculty/";
-//var urlEventInfo = "https://afe1vbusyj.execute-api.us-east-1.amazonaws.com/beta/st-catherine-school/events/";
-//var urlGetSchoolSchedInfo = "https://afe1vbusyj.execute-api.us-east-1.amazonaws.com/beta/st-catherine-school/schoolschedule/";
-
-// UNDER HERE CURRENTLY BEING WORKED ON
-// var urlGetAd = "https://tp6pumul78.execute-api.us-east-1.amazonaws.com/prod/version1/ad";
-
-// UNDER HERE URL IS UPDATED
-// var urlGetSchoolSchedInfo = "https://telbelahfa.execute-api.us-east-1.amazonaws.com/prodalexa/stc/school-schedule"
-// var urlClassInfo = "https://telbelahfa.execute-api.us-east-1.amazonaws.com/prodalexa/stc/homework/"
-// var urlGetSchoolLunch = "https://telbelahfa.execute-api.us-east-1.amazonaws.com/prodalexa/stc/lunch";
-// var urlGetSportsInfo = "https://telbelahfa.execute-api.us-east-1.amazonaws.com/prodalexa/stc/sports/latest/";
-
-
 
 function getGradeFromInput(input) {
   return input.match(/\d+/)[0];
@@ -100,9 +84,9 @@ function processSquad(squadFromAlexa) {
 const handlers = {
     'LaunchRequest': function () {
         this.emit(':ask', 'Welcome to the Bishop Blanchet Alexa application. ' +
-                    'You can ask questions like:  What type of day is today? '
+                    'You can ask questions like:  What is going on today? '
                     , 'Hi!  You are in the Bishop Blanchet app.  You can ask me ' +
-                    'about what kind of day it is, sports, clubs and the arts.');
+                    'what is going on today.');
     },
     'sportDailySummary': function () {
 
@@ -120,12 +104,21 @@ const handlers = {
             stopAtIndex = sessionAttributes.sportsToday.length;
             finishedAllSports = true;
           }
-          for (var i=0;i<3;i++) {
+          for (var i=0;i<stopAtIndex;i++) {
             console.log('speechOutput: ', speechOutput);
-            speechOutput += sessionAttributes.sportsToday[i].sport;
-            speechOutput += " " + "is at " + sessionAttributes.sportsToday[i].startTime;
-            speechOutput += " " + "at " + sessionAttributes.sportsToday[i].location;
-            speechOutput += ". ";
+            var newEventSpeechOutput = "";
+            newEventSpeechOutput += sessionAttributes.sportsToday[i].sport;
+            newEventSpeechOutput += " " + "is at " + sessionAttributes.sportsToday[i].startTime;
+            //newEventSpeechOutput += " " + "at " + sessionAttributes.sportsToday[i].location;
+            newEventSpeechOutput += ". ";
+
+            var newSpeechOutput = speechOutput + newEventSpeechOutput;
+            if (newSpeechOutput.length < 256 ) {
+              speechOutput = newSpeechOutput;
+            } else {
+              console.log('Could not add new event.  Makes speechOutput greater than 256');
+            }
+
           }
           if (!finishedAllSports) {
             speechOutput += "Check the iOS app for all of today\'s events. ";
@@ -137,34 +130,73 @@ const handlers = {
     },
     'clubDailySummary': function () {
 
+      if (sessionAttributes.clubsToday == undefined) {
+        this.emit(':tell', 'I do not see any clubs at the moment.  Please ' +
+                  'try asking What is going on today so I can fetch that for you.');
+      }
+
       console.log('clubs today: ', sessionAttributes.clubsToday);
 
-      var speechOutput = "Here are the first 3 club events. ";
+      var speechOutput = "Here are some club events today. ";
 
       if (sessionAttributes.clubsToday == 0) {
-        speechOutput += "There are no club events today. Do you want to hear about clubs or special events?";
+        speechOutput = "There are no club events today. Do you want to hear about sports or special events?";
         this.emit(':ask', speechOutput);
       } else {
         var stopAtIndex = 3;
         var finishedAllClubs = false;
-        if (sessionAttributes.clubsToday.length < 3) {
+        if (sessionAttributes.clubsToday.length < 4) {
+          console.log('There were less than 4 club events.  Setting to length of array.');
           stopAtIndex = sessionAttributes.clubsToday.length;
           finishedAllClubs = true;
         }
-        for (var i=0;i<3;i++) {
-          console.log('speechOutput: ', speechOutput);
-          speechOutput += sessionAttributes.clubsToday[i].club;
-          speechOutput += " " + "is at " + sessionAttributes.clubsToday[i].startTime;
-          speechOutput += " " + "at " + sessionAttributes.clubsToday[i].location;
-          speechOutput += ". ";
+        for (var i=0;i<stopAtIndex;i++) {
+//          console.log('speechOutput: ', speechOutput);
+          var newEventSpeechOutput = "";
+          newEventSpeechOutput += sessionAttributes.clubsToday[i].club;
+          newEventSpeechOutput += " " + "is at " + sessionAttributes.clubsToday[i].startTime;
+          if (sessionAttributes.clubsToday[i].location.length < 24) {
+            newEventSpeechOutput += " " + "at " + sessionAttributes.clubsToday[i].location;
+          }
+          newEventSpeechOutput += ". ";
+
+          var newSpeechOutput = speechOutput + newEventSpeechOutput;
+          if (newSpeechOutput.length < 256 ) {
+            console.log('speechOutput length: ', newSpeechOutput.length);
+            speechOutput = newSpeechOutput;
+            console.log('newSpeechOutput: ', newSpeechOutput);
+            console.log('speechOutput: ', speechOutput);
+          } else {
+            console.log('Could not add new event.  Makes speechOutput greater than 256');
+            console.log('Current speechOutput length is: ', speechOutput);
+            console.log('Regected speechOutput length is: ', newSpeechOutput);
+          }
 
         }
-        if (!finishedAllClubs) {
-          speechOutput += "Check the iOS app for all of today\'s events. ";
+
+        var iosSpeechRedirect = "Open the Blanchet iOS app for more school information. ";
+        if ((!finishedAllClubs) && (speechOutput.length + iosSpeechRedirect.length < 256)) {
+          console.log('Added iOS statement');
+          speechOutput += iosSpeechRedirect;
+          console.log('AFTER iOS redirect: ', speechOutput);
         }
-        speechOutput += ""
-        speechOutput += "Do you want to hear about sports or special events?";
-        this.emit(':ask', speechOutput);
+        //speechOutput += " ";
+        var endingSpeechOption = "Do you want to hear about sports or special events?";
+        if (speechOutput.length + endingSpeechOption.length < 256) {
+          speechOutput += endingSpeechOption;
+          console.log('AFTER ending question: ', speechOutput);
+        } else {
+          speechOutput += ' End your session?';
+          console.log('AFTER ending question total length: ', speechOutput);
+        }
+        console.log('Next line is the speechOutput: ', speechOutput);
+        if (speechOutput.length < 256) {
+          this.emit(':ask', speechOutput);
+        } else {
+          this.emit(':tell', 'There are too many events.  Please use the iOS app ' +
+                    'or ask me when an event for a specific club is.  Remember to say ' +
+                    'Open Blanchet and then ask about the specific activity.');
+        }
       }
 
     },
@@ -172,10 +204,10 @@ const handlers = {
 
       console.log('special events today: ', sessionAttributes.clubsToday);
 
-      var speechOutput = "Here are the first 3 special events. ";
+      var speechOutput = "Here are some special events today. ";
 
       if (sessionAttributes.specialEventsToday == 0) {
-        speechOutput += "There are no special events today. Do you want to hear about clubs or sports?";
+        speechOutput = "There are no special events today. Do you want to hear about clubs or sports?";
         this.emit(':ask', speechOutput);
       } else {
         var stopAtIndex = 3;
@@ -184,12 +216,19 @@ const handlers = {
           stopAtIndex = sessionAttributes.specialEventsToday.length;
           finishedAllClubs = true;
         }
-        for (var i=0;i<3;i++) {
+        for (var i=0;i<stopAtIndex;i++) {
           console.log('speechOutput: ', speechOutput);
-          speechOutput += sessionAttributes.specialEventsToday[i].summary;
-          speechOutput += " " + "is at " + sessionAttributes.clubsToday[i].startTime;
-          speechOutput += " " + "at " + sessionAttributes.clubsToday[i].location;
-          speechOutput += ". ";
+          var newEventSpeechOutput = "";
+          newEventSpeechOutput += sessionAttributes.specialEventsToday[i].summary;
+          newEventSpeechOutput += " " + "is at " + sessionAttributes.clubsToday[i].startTime;
+          newEventSpeechOutput += " " + "at " + sessionAttributes.clubsToday[i].location;
+          newEventSpeechOutput += ". ";
+          var newSpeechOutput = speechOutput + newEventSpeechOutput;
+          if (newSpeechOutput.length < 256 ) {
+            speechOutput = newSpeechOutput;
+          } else {
+            console.log('Could not add new event.  Makes speechOutput greater than 256');
+          }
 
         }
         if (!finishedAllClubs) {
@@ -275,8 +314,23 @@ const handlers = {
               } else if (data.schedule.length == 0) {
                     self.emit(':tell', dateFromAlexa + ' is a unified day.');
               } else {
+                  var speechOutput = _.filter(data.schedule, function(o) {
+                    return o.eventDate == dateFromAlexa;
+                  });
+                  self.emit(':tell', dateFromAlexa + ' is a ' + speechOutput.summary);
+              }
+
+
+/*
+              if ((userRequestedDate.isoWeekday() == 6) ||
+                  (userRequestedDate.isoWeekday() == 7)) {
+                    self.emit(':tell', dateFromAlexa + ' is a weekend.');
+              } else if (data.schedule.length == 0) {
+                    self.emit(':tell', dateFromAlexa + ' is a unified day.');
+              } else {
                     self.emit(':tell', dateFromAlexa + ' is either a green or gold day.');
               }
+*/
 
             });
         });
