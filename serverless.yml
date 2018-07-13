@@ -33,6 +33,21 @@ provider:
 
 functions:
 
+  getTypeOfDayFromSheet:
+    handler: typeofday-handler.getTypeOfDayFromSheet
+    events:
+            - http:
+                path: /type-of-day
+                method: get
+                
+
+  getTodayBellSchedule:
+    handler: bell-schedule-handler.getBellSchedule
+    events:
+            - http:
+                path: /bell-schedule-today
+                method: get
+
 
   blanchetAlexaSkill:
     handler: bbhs-alexa.handler

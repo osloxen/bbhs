@@ -176,16 +176,20 @@ function GetGoogleCalendarData( sport,
 
       console.log('inside processTypeOfDay');
 
-      console.log(events[0]);
+      console.log('events --> ', events);
+      console.log('length of array --> ', events.length);
+      console.log('first event --> ', events[0]);
 
       events.forEach(function (event) {
 
         var dateOfEvent = null;
 
         if (event.rawStartTime != undefined) {
-          dateOfEvent = momentTZ(event.rawStartTime).tz("America/Los_Angeles").utcOffset(-12);
+//          dateOfEvent = momentTZ(event.rawStartTime).tz("America/Los_Angeles").utcOffset(-12);
+          dateOfEvent = moment(event.rawStartTime);
         } else {
-          dateOfEvent = momentTZ(event.start).tz("America/Los_Angeles").utcOffset(-12);
+//          dateOfEvent = momentTZ(event.start).tz("America/Los_Angeles").utcOffset(-12);
+          dateOfEvent = moment(event.start);
         }
 
         var year = dateOfEvent.format('Y');
@@ -195,17 +199,19 @@ function GetGoogleCalendarData( sport,
         var currentEvent = {};
 
     //    if (year == "2018") {
-        if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
+//        if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
+        if ((year == "2018") &&  (month == "6")) {
   //        if ((year == "2018") && ((month == "4"))) {
     //    if ((year == "2018") && (month == "3") && (day == "10")) {
-
 
           var today = momentTZ().tz("America/Los_Angeles");
 
           if (event.rawStartTime != undefined) {
-            var startTimeObject = momentTZ(event.rawStartTime).tz("America/Los_Angeles");
+//            var startTimeObject = momentTZ(event.rawStartTime).tz("America/Los_Angeles");
+            var startTimeObject = moment(event.rawStartTime);
           } else {
-            var startTimeObject = momentTZ(event.start).tz("America/Los_Angeles");
+//            var startTimeObject = momentTZ(event.start).tz("America/Los_Angeles");
+            var startTimeObject = moment(event.start);
           }
 
           var eventDate = startTimeObject.format("YYYY-MM-DD");
@@ -241,7 +247,8 @@ function GetGoogleCalendarData( sport,
       var currentEvent = {};
 
   //    if (year == "2018") {
-      if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
+  //      if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
+        if ((year == "2018") &&  (month == "6")) {
   //    if ((year == "2018") && (month == "3") && (day == "10")) {
 
         currentEvent.sport = assignSport(event.summary);
@@ -312,12 +319,20 @@ function GetGoogleCalendarData( sport,
 
   this.getGreenDayCalendarData = function(callback) {
 
-    console.log('inside getGreenDayCalendarData');
+    console.log('inside getGreenDayCalendarData!!!');
 
     greenDayCalendar.getEvents(function(err, events) {
       if (err) { return console.log(err.message); }
 
+      console.log('All Green Days: ', events);
+
       processTypeOfDay(self.greenDaysSchedule, events);
+
+      var deleteMeAddEvent = {};
+      deleteMeAddEvent.eventDate = "2018-06-11";
+      deleteMeAddEvent.summary = "Green Day";
+
+      self.greenDaysSchedule.push(deleteMeAddEvent);
 
       callback();
     });
@@ -332,7 +347,7 @@ function GetGoogleCalendarData( sport,
     goldDayCalendar.getEvents(function(err, events) {
       if (err) { return console.log(err.message); }
 
-      console.log('Gold Days: ', events);
+      console.log('All Gold Days!!!: ', events);
 
       processTypeOfDay(self.goldDaysSchedule, events);
 
@@ -340,6 +355,16 @@ function GetGoogleCalendarData( sport,
     });
 
   } // end of this.getGoldDayCalendarData
+
+
+  this.debugPrintGreenAndGold = function(callback) {
+
+    console.log('inside debugPrintGreenAndGold');
+    console.log('GREEN: ', self.greenDaysSchedule);
+    console.log('GOLD: ', self.goldDaysSchedule);
+
+    callback();
+  } // end of debugPrintGreenAndGold
 
 
   this.combineGoldandGreenDaySchedules = function(callback) {
@@ -531,9 +556,13 @@ function GetGoogleCalendarData( sport,
 
     //moment().tz("America/Los_Angeles").format();
 
-    var today = momentTZ().tz("America/Los_Angeles");
-    var tomorrow = momentTZ().tz("America/Los_Angeles").add(1, 'days');
-    var dayAfterTomorrow = momentTZ().tz("America/Los_Angeles").add(2, 'days');
+    // var today = momentTZ().tz("America/Los_Angeles");
+    // var tomorrow = momentTZ().tz("America/Los_Angeles").add(1, 'days');
+    // var dayAfterTomorrow = momentTZ().tz("America/Los_Angeles").add(2, 'days');
+
+    var today = moment();
+    var tomorrow = moment().add(1, 'days');
+    var dayAfterTomorrow = moment().add(2, 'days');
 
 
     console.log('Today: ', today.format('YYYY-MM-DD'));
@@ -713,6 +742,7 @@ exports.getDayDetails = function(date, callerCallback) {
     getGoogleCalendarData.initialize,
     getGoogleCalendarData.getGreenDayCalendarData,
     getGoogleCalendarData.getGoldDayCalendarData,
+    getGoogleCalendarData.debugPrintGreenAndGold,
     //getGoogleCalendarData.getUnifiedDayCalendarData,   // not working
     //getGoogleCalendarData.getSpecialDayCalendarData,   // not working
     getGoogleCalendarData.combineGoldandGreenDaySchedules,

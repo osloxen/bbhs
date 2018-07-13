@@ -6,6 +6,7 @@
 const Alexa = require('alexa-sdk');
 var https = require('https');
 var _ = require('lodash');
+var stripchar = require('stripchar').StripChar;
 
 const APP_ID = 'amzn1.ask.skill.0fb2e614-1a7e-458d-ba4b-eaae08658d16';
 
@@ -137,7 +138,7 @@ const handlers = {
 
       console.log('clubs today: ', sessionAttributes.clubsToday);
 
-      var speechOutput = "Here are some club events today. ";
+      var speechOutput = "Here are some of the club events today. ";
 
       if (sessionAttributes.clubsToday == 0) {
         speechOutput = "There are no club events today. Do you want to hear about sports or special events?";
@@ -155,49 +156,33 @@ const handlers = {
           var newEventSpeechOutput = "";
           newEventSpeechOutput += sessionAttributes.clubsToday[i].club;
           newEventSpeechOutput += " " + "is at " + sessionAttributes.clubsToday[i].startTime;
-          if (sessionAttributes.clubsToday[i].location.length < 24) {
+          if (sessionAttributes.clubsToday[i].location.length < 30) {
             newEventSpeechOutput += " " + "at " + sessionAttributes.clubsToday[i].location;
           }
           newEventSpeechOutput += ". ";
 
           var newSpeechOutput = speechOutput + newEventSpeechOutput;
-          if (newSpeechOutput.length < 256 ) {
-            console.log('speechOutput length: ', newSpeechOutput.length);
-            speechOutput = newSpeechOutput;
-            console.log('newSpeechOutput: ', newSpeechOutput);
-            console.log('speechOutput: ', speechOutput);
-          } else {
-            console.log('Could not add new event.  Makes speechOutput greater than 256');
-            console.log('Current speechOutput length is: ', speechOutput);
-            console.log('Regected speechOutput length is: ', newSpeechOutput);
-          }
-
+          console.log('new speechOutput length: ', newSpeechOutput.length);
+          console.log('old speechOutput length: ', speechOutput.length);
+          speechOutput = newSpeechOutput;
+          console.log('speechOutput: ', speechOutput);
         }
 
-        var iosSpeechRedirect = "Open the Blanchet iOS app for more school information. ";
-        if ((!finishedAllClubs) && (speechOutput.length + iosSpeechRedirect.length < 256)) {
-          console.log('Added iOS statement');
-          speechOutput += iosSpeechRedirect;
-          console.log('AFTER iOS redirect: ', speechOutput);
-        }
-        //speechOutput += " ";
-        var endingSpeechOption = "Do you want to hear about sports or special events?";
-        if (speechOutput.length + endingSpeechOption.length < 256) {
-          speechOutput += endingSpeechOption;
-          console.log('AFTER ending question: ', speechOutput);
-        } else {
-          speechOutput += ' End your session?';
-          console.log('AFTER ending question total length: ', speechOutput);
-        }
+
+        var iosSpeechRedirect = " Open the Blanchet iOS app for details on these events and others. ";
+        speechOutput += iosSpeechRedirect;
+        console.log('AFTER iOS redirect: ', speechOutput);
+
+        speechOutput = stripchar.RSspecChar(speechOutput, '.');  // strips all special char except period
+
+        var endingSpeechOption = " Do you want to hear about sports or special events? " +
+                                 "Just say sports or special events. ";
+        speechOutput += endingSpeechOption;
+
         console.log('Next line is the speechOutput: ', speechOutput);
-        if (speechOutput.length < 256) {
-          this.emit(':ask', speechOutput);
-        } else {
-          this.emit(':tell', 'There are too many events.  Please use the iOS app ' +
-                    'or ask me when an event for a specific club is.  Remember to say ' +
-                    'Open Blanchet and then ask about the specific activity.');
-        }
-      }
+        this.emit(':ask', speechOutput);
+
+      } // end of else if there are more than 0 events
 
     },
     'specialEventDailySummary': function () {
@@ -216,13 +201,14 @@ const handlers = {
           stopAtIndex = sessionAttributes.specialEventsToday.length;
           finishedAllClubs = true;
         }
+
         for (var i=0;i<stopAtIndex;i++) {
           console.log('speechOutput: ', speechOutput);
           var newEventSpeechOutput = "";
           newEventSpeechOutput += sessionAttributes.specialEventsToday[i].summary;
           newEventSpeechOutput += " " + "is at " + sessionAttributes.clubsToday[i].startTime;
           newEventSpeechOutput += " " + "at " + sessionAttributes.clubsToday[i].location;
-          newEventSpeechOutput += ". ";
+          newEventSpeechOutput += ".";
           var newSpeechOutput = speechOutput + newEventSpeechOutput;
           if (newSpeechOutput.length < 256 ) {
             speechOutput = newSpeechOutput;

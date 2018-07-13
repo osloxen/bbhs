@@ -3,7 +3,7 @@
 
 'use strict';
 
-
+process.env.TZ = 'America/Los_Angeles';
 
 var PublicGoogleCalendar = require('public-google-calendar');
 var publicGoogleCalendar = new PublicGoogleCalendar({ calendarId: '9oounb9m5790te7qdeccr1acos@group.calendar.google.com' });
@@ -85,110 +85,6 @@ function assignGender(summaryString) {
   }
 }
 
-// goldDayCalendar
-
-//publicGoogleCalendar.getEvents(function(err, events) {
-goldDayCalendar.getEvents(function(err, events) {
-  if (err) { return console.log(err.message); }
-  // events is now array of all calendar events
-  //console.log(events);
-
-/*
-  console.log('size of array: ', events.length);
-  console.log('W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*');
-  console.log('first item: ', events[0]);
-  var dateOfEvent = moment(events[0].start);
-  var year = dateOfEvent.format('Y');
-  var month = dateOfEvent.format('M');
-  var day = dateOfEvent.format('D');
-  console.log('year: ', year);
-  console.log('month: ', month);
-  console.log('day: ', day);
-  console.log('date from moment: ', dateOfEvent.format('M D'));
-  console.log('W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*');
-  console.log('W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*');
-  console.log('last item: ', events[events.length-1]);
-  console.log('W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*');
-  console.log('index 1 item: ', events[1]);
-  console.log('W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*');
-  console.log('index 2 item: ', events[2]);
-  console.log('W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*');
-  console.log('index 3 item: ', events[3]);
-  console.log('W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*');
-  console.log('index 4 item: ', events[4]);
-  console.log('W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*W*');
-
-*/
-
-var baseballSched = [];
-var jvBaseballSched = [];
-var sportsSchedule = [];
-
-  events.forEach(function (event) {
-
-    var dateOfEvent = moment(event.start);
-    var year = dateOfEvent.format('Y');
-    var month = dateOfEvent.format('M');
-    var day = dateOfEvent.format('D');
-
-    var currentEvent = {};
-
-//    if (year == "2018") {
-    if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
-//    if ((year == "2018") && (month == "3") && (day == "10")) {
-//      console.log('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
-//      console.log(event.summary);
-//      console.log(event);
-//      console.log('=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-');
-
-      currentEvent.sport = assignSport(event.summary);
-
-      currentEvent.rawStartTime = event.start;
-
-      var startTimeObject = moment(event.start);
-      var startTime = startTimeObject.format("h a");
-      var endTimeObject = moment(event.end);
-      var endTime = endTimeObject.format("h a");
-
-      currentEvent.squad = assignSquad(event.summary);
-      currentEvent.gender = assignGender(event.summary);
-      currentEvent.eventType = "game";
-      currentEvent.startTime = startTime;
-      currentEvent.endTime = endTime;
-      currentEvent.awayOrHome = awayOrHome(event.summary);
-      currentEvent.location = event.location;
-      currentEvent.summary = event.summary;
-
-
-      sportsSchedule.push(currentEvent);
-/*
-      if (event.summary.indexOf("Varsity Baseball") >= 0) {
-        baseballSched.push(currentEvent);
-      } else if (event.summary.indexOf("JV Baseball") >= 0) {
-        jvBaseballSched.push(currentEvent);
-      }
-*/
-    }
-
-  });
-
-  //console.log(baseballSched);
-  //console.log(jvBaseballSched);
-
-
-
-
-  //console.log(sportsSchedule);
-
-/*
-  var marchEventFound = events.find(function (event) {
-
-    return event.start === currentUrl;
-  });
-*/
-
-});
-
 
 
 
@@ -197,11 +93,14 @@ var sportsSchedule = [];
 
     console.log('inside processTypeOfDay');
 
-    console.log(events[0]);
+    //console.log(events[0]);
 
     events.forEach(function (event) {
 
       var dateOfEvent = null;
+
+      // Probably delete this.  trying to figure out dates.  grrrr
+      //dateOfEvent = event.start;
 
       if (event.rawStartTime != undefined) {
         dateOfEvent = momentTZ(event.rawStartTime).tz("America/Los_Angeles").subtract(1, 'days');
@@ -216,17 +115,23 @@ var sportsSchedule = [];
       var currentEvent = {};
 
   //    if (year == "2018") {
-      if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
-//        if ((year == "2018") && ((month == "4"))) {
+//  if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
+      if ((year == "2018") &&  (month == "6")) {
+//        if ((year == "2018") && ((month == "6") && (day == "7"))) {
   //    if ((year == "2018") && (month == "3") && (day == "10")) {
 
+  console.log(event.start);
 
         var today = momentTZ().tz("America/Los_Angeles");
 
         if (event.rawStartTime != undefined) {
           var startTimeObject = momentTZ(event.rawStartTime).tz("America/Los_Angeles").subtract(12, 'hours');
+          currentEvent.moment = moment(event.rawStartTime);
+          currentEvent.raw = event.rawStartTime;
         } else {
           var startTimeObject = momentTZ(event.start).tz("America/Los_Angeles").subtract(12, 'hours');
+          currentEvent.moment = moment(event.start);
+          currentEvent.raw = event.start;
         }
 
         var eventDate = startTimeObject.format("YYYY-MM-DD");
@@ -247,20 +152,22 @@ var greenDaysSchedule = [];
 var unifiedDaysSchedule = [];
 
 goldDayCalendar.getEvents(function(err, events) {
-  console.log('gold day');
+  console.log('GOLD days');
 
   processTypeOfDay(goldDaysSchedule, events)
-  console.log('Gold: ', goldDaysSchedule);
+  console.log('Gold Days processed by MOMENT:');
+  console.log(goldDaysSchedule);
 });
 
 
-// greenDayCalendar.getEvents(function(err, events) {
-//   console.log('green days');
-//
-//   processTypeOfDay(greenDaysSchedule, events)
-//   console.log('Green: ', greenDaysSchedule);
-//
-// });
+greenDayCalendar.getEvents(function(err, events) {
+  console.log('GREEN days');
+
+  processTypeOfDay(greenDaysSchedule, events)
+  console.log('Green: ');
+  console.log(greenDaysSchedule);
+
+});
 
 // unifiedDayCalendar.getEvents(function(err, events) {
 //   console.log('unfied  days');
