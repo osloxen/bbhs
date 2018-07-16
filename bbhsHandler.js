@@ -81,10 +81,15 @@ function lookUpSportSpreadsheetID(sportName) {
     case "volleyball":
         return '1L9flv7uqm7BreQlxAl7lI7uGAZ6uzdq1LVAFUfAxsD0';
         break;
+    case "football":
+        return '1pt0etDRockdPk6Yy3ECgT05-jLqis8jNp2fPIzU8b3Q';
+        break;
     default:
         return undefined
   }
 }
+
+
 
 
 function lookUpScheduleSelection(squad, schedule) {
@@ -127,6 +132,84 @@ function lookUpScheduleSelection(squad, schedule) {
         return 5  // BUGBUG:  do something better here
   }
 }
+
+
+
+exports.getCoachInfo = function(event, context, callback) {
+
+  console.log('Inside getCoachInfo');
+
+  console.log('event: ', event);
+  console.log('pathParameters: ', event.pathParameters);
+
+  var sportName = event.pathParameters.sport;
+
+  var spreadsheetID = lookUpSportSpreadsheetID(sportName);
+
+  async.waterfall([
+          function(callback) {
+
+          spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
+                            spreadsheetID,
+                            2, // Sports - what sheet (tab) is wanted
+                            10, // how many rows to fetch
+                            2, // num columns [name, title]
+                            callback);
+
+        },
+        function(spreadsheetData, callback) {
+
+          console.log('spreadsheetData: ', spreadsheetData);
+
+          var bodyAsJson = JSON.parse(spreadsheetData.body);
+
+          console.log('body as json: ', bodyAsJson);
+
+          callback(null, bodyAsJson.sheetDataArray);
+
+        },
+        function(arrayOfRosterData, callback) {
+              var allCoaches = [];
+
+              console.log('coach info: ', arrayOfRosterData);
+
+              for (var i=2;i<arrayOfRosterData.length;i+=2) {
+                if (arrayOfRosterData[i] != '') {
+                  var coach = {};
+                  coach.name = arrayOfRosterData[i];
+                  coach.title = arrayOfRosterData[i+1];
+
+                  allCoaches.push(coach);
+                }
+              }
+
+              callback(null, allCoaches);
+          },
+
+        function(arrayOfCoaches, callback) {
+          console.log('end of getCoachInfo Waterfall: ',arrayOfCoaches);
+
+          var coachArray = {};
+          coachArray.coaches = arrayOfCoaches;
+
+          const res = {
+              "statusCode": 200,
+              "headers": {
+                'Content-Type': 'application/json',
+                "X-Requested-With": '*',
+                "Access-Control-Allow-Headers": 'Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers',
+                "Access-Control-Allow-Origin": '*',
+                "Access-Control-Allow-Methods": 'GET,HEAD,OPTIONS,POST,PUT'
+              },
+              "body": JSON.stringify(coachArray) // body must be returned as a string
+            };
+
+          context.succeed(res);
+          callback();
+        }
+  ]);
+}; // end of getCoachInfo
+
 
 
 exports.getTwitterFeed = function(event, context, callback) {

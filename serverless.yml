@@ -20,7 +20,7 @@ service: BBHS-Service # NOTE: update this with your service name
 provider:
   name: aws
   runtime: nodejs6.10
-  timeout: 40
+  timeout: 30
   region: us-west-2
 #  memorySize: 3008
 
@@ -33,13 +33,22 @@ provider:
 
 functions:
 
+
+  getBookList:
+    handler: academics-handler.getBookList
+    events:
+            - http:
+                path: /booklist
+                method: get
+
+
   getTypeOfDayFromSheet:
     handler: typeofday-handler.getTypeOfDayFromSheet
     events:
             - http:
                 path: /type-of-day
                 method: get
-                
+
 
   getTodayBellSchedule:
     handler: bell-schedule-handler.getBellSchedule
@@ -95,12 +104,21 @@ functions:
                 method: get
 
 
+  getCoachInfo:
+    handler: bbhsHandler.getCoachInfo
+    events:
+            - http:
+                path: /sports/coaches/{sport}
+                method: get
+
+
   getTwitterFeed:
     handler: bbhsHandler.getTwitterFeed
     events:
             - http:
                 path: /sports/twitter/{sport}
                 method: get
+
 
   getActivityPictures:
     handler: bbhsHandler.getActivityPictures
