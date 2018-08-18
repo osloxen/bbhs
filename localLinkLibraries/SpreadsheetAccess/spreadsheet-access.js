@@ -51,6 +51,8 @@ function GetSpreadsheetData(googleSpreadsheetID,
   this.getMultColumnsInfoFromSheet = function(callback) {
 
     console.log('inside getMultColumnsInfoFromSheet');
+    console.log('max row needed =-> ', maxRowNeeded);
+    console.log('number of columns needed =-> ', numColumnsNeeded);
 
     self.sheetInfo = [];
 
@@ -61,7 +63,8 @@ function GetSpreadsheetData(googleSpreadsheetID,
       'max-col': numColumnsNeeded,
       'return-empty': true
     }, function(err, cells) {
-      //console.log('cells: ', cells);
+      console.log('error =-> ', err);
+      console.log('cells: ', cells);
       for (var i=0;i<cells.length;i++) {
         //console.log('Cell R'+cells[i].row+'C'+cells[i].col+' = '+cells[i].value);
         //console.log('push cell value: ' + cells[i].value);

@@ -79,6 +79,14 @@ function assignSport(summaryString) {
     return "girls-lax";
   } else if (lowerCaseSummaryString.indexOf("cheer") >= 0) {
     return "cheer";
+  } else if (lowerCaseSummaryString.indexOf("volleyball") >= 0) {
+    return "volleyball";
+  } else if (lowerCaseSummaryString.indexOf("football") >= 0) {
+    return "football";
+  } else if (lowerCaseSummaryString.indexOf("swimming") >= 0) {
+    return "swimming";
+  } else if (lowerCaseSummaryString.indexOf("golf") >= 0) {
+    return "golf";
   } else {
     return "undefined";
   }
@@ -199,8 +207,8 @@ function GetGoogleCalendarData( sport,
         var currentEvent = {};
 
     //    if (year == "2018") {
-//        if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
-        if ((year == "2018") &&  (month == "6")) {
+        if ((year == "2018") && ((month == "8") || (month == "9") || (month == "10"))) {
+//        if ((year == "2018") &&  (month == "6")) {
   //        if ((year == "2018") && ((month == "4"))) {
     //    if ((year == "2018") && (month == "3") && (day == "10")) {
 
@@ -234,7 +242,8 @@ function GetGoogleCalendarData( sport,
 
     console.log('inside processCalenderData');
 
-    console.log(events[0]);
+    console.log('The first event =-> ', events[0]);
+    console.log('Number of events =-> ', events.length);
 
     events.forEach(function (event) {
 
@@ -247,9 +256,15 @@ function GetGoogleCalendarData( sport,
       var currentEvent = {};
 
   //    if (year == "2018") {
-  //      if ((year == "2018") && ((month == "4") || (month == "5") || (month == "6"))) {
-        if ((year == "2018") &&  (month == "6")) {
+        if ((year == "2018") && ((month == "8") ||
+                                (month == "9") ||
+                                (month == "10") ||
+                                (month == "11") ||
+                                (month == "12"))) {
+  //      if ((year == "2018") &&  (month == "6")) {
   //    if ((year == "2018") && (month == "3") && (day == "10")) {
+
+        //console.log('Found event within date range =-> ', event.summary);
 
         currentEvent.sport = assignSport(event.summary);
         currentEvent.club = assignClub(event.summary);

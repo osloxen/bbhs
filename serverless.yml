@@ -24,9 +24,9 @@ provider:
   region: us-west-2
 #  memorySize: 3008
 
-  stage: dev
-#  stage: prodGreen
-#  stage: prodBlue
+#  stage: dev
+  stage: prodaug2018
+#  stage: prodblue
 
 
 

@@ -153,7 +153,7 @@ exports.getCoachInfo = function(event, context, callback) {
                             spreadsheetID,
                             2, // Sports - what sheet (tab) is wanted
                             10, // how many rows to fetch
-                            2, // num columns [name, title]
+                            3, // num columns [name, title, email]
                             callback);
 
         },
@@ -173,11 +173,12 @@ exports.getCoachInfo = function(event, context, callback) {
 
               console.log('coach info: ', arrayOfRosterData);
 
-              for (var i=2;i<arrayOfRosterData.length;i+=2) {
+              for (var i=3;i<arrayOfRosterData.length;i+=3) {
                 if (arrayOfRosterData[i] != '') {
                   var coach = {};
                   coach.name = arrayOfRosterData[i];
                   coach.title = arrayOfRosterData[i+1];
+                  coach.email = arrayOfRosterData[i+2];
 
                   allCoaches.push(coach);
                 }

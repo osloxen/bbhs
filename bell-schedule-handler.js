@@ -32,8 +32,8 @@ exports.getBellSchedule = function(event, context, callback) {
           spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
                             frontOfficeSheetId,
                             2, // what sheet (tab) is wanted
-                            40, // how many rows to fetch  BUGBUG optimize this!
-                            4, // num columns [periodName, duration, start, end]
+                            15, // how many rows to fetch  BUGBUG optimize this!
+                            8, // num columns [periodName, duration, start, end]
                             callback);
 
         },
@@ -49,19 +49,51 @@ exports.getBellSchedule = function(event, context, callback) {
 
         },
         function(arrayOfBellScheduleData, callback) {
+
+          console.log('arrayOfBellScheduleData Data: ', arrayOfBellScheduleData);
+
+          var overrideBellSchedule = false;
+
+          console.log('checking for override...');
+          console.log('checking first cell of override =-> ', arrayOfBellScheduleData[12]);
+
+          if (arrayOfBellScheduleData[12] != undefined) {
+            console.log('HUMAN DETECTED!!! Override found for bell schedule!');
+            overrideBellSchedule = true;
+          } else {
+            console.log('no override found.');
+          }
+
+          callback(null, arrayOfBellScheduleData, overrideBellSchedule);
+        },
+        function(arrayOfBellScheduleData, overrideBellSchedule, callback) {
               var periodSchedule = [];
 
-              console.log('spreadsheet bell schedule data --> ', arrayOfBellScheduleData);
+              console.log('ALL spreadsheet bell schedule data --> ', arrayOfBellScheduleData);
 
-              for (var i=4;i<arrayOfBellScheduleData.length;i+=4) {
-                if (arrayOfBellScheduleData[i] != '') {
-                  var periodData = {};
-                  periodData.periodName = arrayOfBellScheduleData[i];
-                  periodData.duration = arrayOfBellScheduleData[i+1];
-                  periodData.startTime = arrayOfBellScheduleData[i+2];
-                  periodData.endTime = arrayOfBellScheduleData[i+3];
+              if (overrideBellSchedule) {
+                for (var i=12;i<arrayOfBellScheduleData.length;i+=8) {
+                  if (arrayOfBellScheduleData[i] != '') {
+                    var periodData = {};
+                    periodData.periodName = arrayOfBellScheduleData[i];
+                    periodData.duration = arrayOfBellScheduleData[i+1];
+                    periodData.startTime = arrayOfBellScheduleData[i+2];
+                    periodData.endTime = arrayOfBellScheduleData[i+3];
 
-                  periodSchedule.push(periodData);
+                    periodSchedule.push(periodData);
+                  }
+                }
+              } else {
+                for (var i=8;i<arrayOfBellScheduleData.length;i+=8) {
+                  if (arrayOfBellScheduleData[i] != '') {
+                    var periodData = {};
+                    periodData.periodName = arrayOfBellScheduleData[i];
+                    periodData.duration = arrayOfBellScheduleData[i+1];
+                    periodData.startTime = arrayOfBellScheduleData[i+2];
+                    periodData.endTime = arrayOfBellScheduleData[i+3];
+
+                    periodSchedule.push(periodData);
+                  }
                 }
               }
 

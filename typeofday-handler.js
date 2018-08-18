@@ -29,11 +29,13 @@ exports.getTypeOfDayFromSheet = function(event, context, callback) {
   async.waterfall([
           function(callback) {
 
-          spreadsheetAccess.getGoogleSpreadsheetDataOneColumn(
-                            frontOfficeSheetId,
-                            1, // what sheet (tab) is wanted
-                            5, // how many rows to fetch  BUGBUG optimize this!
-                            callback);
+            spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
+                                frontOfficeSheetId,
+                                1, // sheet number
+                                6, // max row maxRowNeeded
+                                2, // number of columns needed
+                                callback);
+
         },
         function(typeOfDayData, callback) {
 
@@ -43,16 +45,62 @@ exports.getTypeOfDayFromSheet = function(event, context, callback) {
 
           console.log('body as json: ', bodyAsJson);
 
-          callback(null, bodyAsJson.sheetDataArray);
+          var overrideToday = false;
+          var overrideTomorrow = false;
+
+          console.log('checking for override...');
+          console.log('checking Today =-> ', bodyAsJson.sheetDataArray[3]);
+          console.log('checking Tomorrow =-> ', bodyAsJson.sheetDataArray[7]);
+
+          if (bodyAsJson.sheetDataArray[3] == '') {
+            console.log('Test for empty quotes on override worked for TODAY');
+          }
+
+          if (bodyAsJson.sheetDataArray[3] != '') {
+            console.log('HUMAN DETECTED!!! Override found for type of day TODAY');
+            overrideToday = true;
+          } else {
+            console.log('no override found.');
+          }
+
+          if (bodyAsJson.sheetDataArray[7] != '') {
+            console.log('HUMAN DETECTED!!! Override found for type of day TOMORROW');
+            overrideTomorrow = true;
+          } else {
+            console.log('no override found.');
+          }
+
+          callback(null, bodyAsJson.sheetDataArray, overrideToday, overrideTomorrow);
 
         },
-        function(arrayOfTypeOfDay, callback) {
+        function(arrayOfTypeOfDay, overrideToday, overrideTomorrow, callback) {
+          console.log('overrideToday =-> ', overrideToday);
+          console.log('overrideTomorrow =-> ', overrideTomorrow);
+          console.log('array =-> ', arrayOfTypeOfDay);
+
+          callback(null, arrayOfTypeOfDay, overrideToday, overrideTomorrow);
+        },
+        function(arrayOfTypeOfDay, overrideToday, overrideTomorrow, callback) {
               var typeOfDay = {};
 
               console.log('type of day data --> ', arrayOfTypeOfDay);
 
-              typeOfDay.today = arrayOfTypeOfDay[0];
-              typeOfDay.tomorrow = arrayOfTypeOfDay[2];
+              console.log('Type of day TODAY Google Calendar => ', arrayOfTypeOfDay[2]);
+              console.log('Type of day TOMORROW Google Calendar => ', arrayOfTypeOfDay[6]);
+              console.log('Type of day TODAY override => ', arrayOfTypeOfDay[3]);
+              console.log('Type of day TOMORROW override => ', arrayOfTypeOfDay[7]);
+
+              if (overrideToday) {
+                typeOfDay.today = arrayOfTypeOfDay[3];
+              } else {
+                typeOfDay.today = arrayOfTypeOfDay[2];
+              }
+
+              if (overrideTomorrow) {
+                typeOfDay.tomorrow = arrayOfTypeOfDay[7];
+              } else {
+                typeOfDay.tomorrow = arrayOfTypeOfDay[6];
+              }
 
               callback(null, typeOfDay);
           },

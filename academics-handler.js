@@ -32,8 +32,8 @@ exports.getBookList = function(event, context, callback) {
           spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
                             frontOfficeSheetId,
                             3, // what sheet (tab) is wanted
-                            30, // how many rows to fetch  BUGBUG optimize this!
-                            7, // num columns [periodName, duration, start, end]
+                            130, // how many rows to fetch  BUGBUG optimize this!
+                            7, // num columns [subject, class, book, author, publisher, id, medium]
                             callback);
 
         },
