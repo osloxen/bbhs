@@ -18,6 +18,82 @@ var googleCalendarData = require('localLinkLibraries/GoogleCalendarData/calendar
 var frontOfficeSheetId = '1pH14tv1a1LkVch08jDARjZvYEK0SOqijK-PZ7_s1P_8';
 
 
+function overrideToSpreadsheetSchedule(sport) {
+
+  switch(sport) {
+    case "volleyball":
+      return true;
+      break;
+    default:
+      return false;
+  }
+}
+
+function convertSpreadsheetSchedToGoogleCalendarData(scheduleArray) {
+
+  console.log('Inside convertSpreadsheetSchedToGoogleCalendarData');
+
+  var convertedData = [];
+
+  console.log('body =-> ', scheduleArray.body);
+  var sheetData = JSON.parse(scheduleArray.body);
+  console.log('body.sheetDataArray =-> ', sheetData);
+
+  for (var i=0;i<sheetData.sheetDataArray.length;i+=7) {
+    var currentEvent = {};
+
+    if ((sheetData.sheetDataArray[i] != '') && (sheetData.sheetDataArray[i] != 'date')) {
+
+      currentEvent.eventDate = sheetData.sheetDataArray[i];
+
+      if (sheetData.sheetDataArray[i+1] != '') {
+        currentEvent.startTime = sheetData.sheetDataArray[i+1];
+      } else {
+        currentEvent.startTime = 'tbd';
+      }
+
+      if (sheetData.sheetDataArray[i+2] != '') {
+        currentEvent.endTime = sheetData.sheetDataArray[i+2];
+      } else {
+        currentEvent.endTime = 'tbd';
+      }
+
+      if (sheetData.sheetDataArray[i+3] != '') {
+        currentEvent.summary = sheetData.sheetDataArray[i+3];
+      } else {
+        currentEvent.summary = 'tbd';
+      }
+
+      if (sheetData.sheetDataArray[i+4] != '') {
+        currentEvent.location = sheetData.sheetDataArray[i+4];
+      } else {
+        currentEvent.location = 'tbd';
+      }
+
+      if (sheetData.sheetDataArray[i+5] != '') {
+        currentEvent.address = sheetData.sheetDataArray[i+5];
+      } else {
+        currentEvent.address = 'tbd';
+      }
+
+      if (sheetData.sheetDataArray[i+6] != '') {
+        currentEvent.notes = sheetData.sheetDataArray[i+6];
+      } else {
+        currentEvent.notes = 'tbd';
+      }
+
+      convertedData.push(currentEvent);
+    }
+
+
+  }
+
+  console.log('converted data: ', convertedData);
+
+  return convertedData;
+}
+
+
 function lookUpSportSpreadsheetID(sportName) {
 
     switch (sportName) {
@@ -83,6 +159,21 @@ function lookUpSportSpreadsheetID(sportName) {
         break;
     case "football":
         return '1pt0etDRockdPk6Yy3ECgT05-jLqis8jNp2fPIzU8b3Q';
+        break;
+    case "football":
+        return '1pt0etDRockdPk6Yy3ECgT05-jLqis8jNp2fPIzU8b3Q';
+        break;
+    case "swimming":
+        return '1JgtwjPDMPVS2wf1GoOOEnnLWc1wRY5ewbFcEKJmd2Ps';
+        break;
+    case "golf":
+        return '1BdVqLc00IDVRTVvCdjDGwAwC0LnrvPUHSkVQ1OVNXIQ';
+        break;
+    case "girls-soccer":
+        return '1OOTeLffghJaG50mC2vu91Xl51b7d5ZW0gM6yNAOf_Ow';
+        break;
+    case "cross-country":
+        return '1EU1VNA-NO5DxG2Yx6CxZS_fGS_rWIO9SZso5zLLWv68';
         break;
     default:
         return undefined
@@ -448,12 +539,47 @@ exports.getTeamScheduleFromCalendar = function(event, context, callback) {
   async.waterfall([
           function(callback) {
 
-          googleCalendarData.getGoogleSportsCalendarData(
-                            sportName,
-                            squad, // varsity, jv or freshman
-                            gender,
-                            eventType, // game or practice (or both???)
-                            callback);
+            if (overrideToSpreadsheetSchedule(sportName)) {
+              console.log('Override to use spredsheet for schedule.  Sport:  ', sportName);
+
+              spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
+                                  lookUpSportSpreadsheetID(sportName),
+                                  6, // what sheet tab to view
+                                  30, // how many rows to fetch
+                                  7, // num columns
+                                  callback);
+            } else {
+
+              googleCalendarData.getGoogleSportsCalendarData(
+                                sportName,
+                                squad, // varsity, jv or freshman
+                                gender,
+                                eventType, // game or practice (or both???)
+                                callback);
+            }
+
+        },
+        function(scheduleArray, callback) {
+
+          var updatedScheduleArray = null;
+
+          if (overrideToSpreadsheetSchedule(sportName)) {
+
+            console.log('About to convert spreadsheet data into google calender data');
+
+            updatedScheduleArray = convertSpreadsheetSchedToGoogleCalendarData(scheduleArray);
+
+            console.log('updatedScheduleArray =-> ', updatedScheduleArray);
+
+            callback(null, updatedScheduleArray);
+
+          } else {
+
+            updatedScheduleArray = scheduleArray;
+
+            callback(null, updatedScheduleArray);
+          }
+
         },
         function(scheduleArray, callback) {
           console.log('end of getGoogleSportsCalendarData Waterfall: ',scheduleArray);

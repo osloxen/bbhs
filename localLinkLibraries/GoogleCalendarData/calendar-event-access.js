@@ -54,6 +54,10 @@ function assignSquad(summaryString) {
 
 function assignSport(summaryString) {
 
+  // Soccer is sometimes written without gender so adding months to pick the right one
+  var today = moment();
+  var month = today.format('M');
+
   var lowerCaseSummaryString = summaryString.toLowerCase();
 
   if (lowerCaseSummaryString.indexOf("baseball") >= 0) {
@@ -62,10 +66,11 @@ function assignSport(summaryString) {
     return "track";
   } else if (lowerCaseSummaryString.indexOf("softball") >= 0) {
     return "softball";
-  } else if (lowerCaseSummaryString.indexOf("soccer") >= 0) {
+  } else if ((lowerCaseSummaryString.indexOf("soccer") >= 0) &&
+             (month <= 6)){
     return "boys-soccer";
   } else if ((lowerCaseSummaryString.indexOf("soccer") >= 0) &&
-              (lowerCaseSummaryString.indexOf("girls") >= 0)) {
+              (month >= 6)) {
     return "girls-soccer";
   } else if (lowerCaseSummaryString.indexOf("tennis") >= 0) {
     return "tennis";
@@ -87,6 +92,8 @@ function assignSport(summaryString) {
     return "swimming";
   } else if (lowerCaseSummaryString.indexOf("golf") >= 0) {
     return "golf";
+  } else if (lowerCaseSummaryString.indexOf("cross country") >= 0) {
+    return "cross-country";
   } else {
     return "undefined";
   }
@@ -136,17 +143,19 @@ function assignClub(summaryString) {
 
 function assignGender(summaryString) {
 
-  var lowerCaseSummaryString = summaryString.toLowerCase();
+  // var lowerCaseSummaryString = summaryString.toLowerCase();
+  //
+  // if (lowerCaseSummaryString.indexOf("girls") >= 0) {
+  //   return "girls";
+  // } else if (lowerCaseSummaryString.indexOf("boys") >= 0) {
+  //   return "boys";
+  // } else if (lowerCaseSummaryString.indexOf("softball") >= 0) {
+  //   return "girls";
+  // } else {
+  //   return "undefined";
+  // }
 
-  if (lowerCaseSummaryString.indexOf("girls") >= 0) {
-    return "girls";
-  } else if (lowerCaseSummaryString.indexOf("boys") >= 0) {
-    return "boys";
-  } else if (lowerCaseSummaryString.indexOf("softball") >= 0) {
-    return "girls";
-  } else {
-    return "undefined";
-  }
+  return null;
 }
 
 
@@ -280,7 +289,7 @@ function GetGoogleCalendarData( sport,
         var endTime = endTimeObject.format("h a");
 
         currentEvent.squad = assignSquad(event.summary);
-        currentEvent.gender = assignGender(event.summary);
+        //currentEvent.gender = assignGender(event.summary);
         currentEvent.eventType = "game";
         currentEvent.startTime = startTime;
         currentEvent.endTime = endTime;
@@ -480,11 +489,13 @@ function GetGoogleCalendarData( sport,
 
     console.log('sportFilteredSchedule: ', self.sportFilteredSchedule);
 
-    self.squadFilteredSchedule = self.sportFilteredSchedule.filter((eventInstance) =>
-                                  eventInstance.squad == squad);
+    // self.squadFilteredSchedule = self.sportFilteredSchedule.filter((eventInstance) =>
+    //                               eventInstance.squad == squad);
 
-    self.finalFilteredSchedule = self.squadFilteredSchedule.filter((eventInstance) =>
-                                  eventInstance.eventType == eventType);
+    // self.finalFilteredSchedule = self.squadFilteredSchedule.filter((eventInstance) =>
+    //                               eventInstance.eventType == eventType);
+
+    self.finalFilteredSchedule = self.sportFilteredSchedule;
 
     callback();
   }
