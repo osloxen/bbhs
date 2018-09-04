@@ -893,7 +893,7 @@ exports.getTeamRoster = function(event, context, callback) {
                             spreadsheetID,
                             9, // Sports - what sheet (tab) is wanted
                             50, // how many rows to fetch
-                            3, // num columns [name, number, class]
+                            5, // num columns [name, number, class]
                             callback);
 
         },
@@ -913,12 +913,14 @@ exports.getTeamRoster = function(event, context, callback) {
 
               console.log('spreadsheet roster: ', arrayOfRosterData);
 
-              for (var i=3;i<arrayOfRosterData.length;i+=3) {
+              for (var i=5;i<arrayOfRosterData.length;i+=5) {
                 if (arrayOfRosterData[i] != '') {
                   var player = {};
                   player.lastName = arrayOfRosterData[i];
                   player.number = arrayOfRosterData[i+1];
                   player.class = arrayOfRosterData[i+2];
+                  player.height = arrayOfRosterData[i+3];
+                  player.position = arrayOfRosterData[i+4];
 
                   roster.push(player);
                 }

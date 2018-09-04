@@ -13,7 +13,7 @@ var activitiesCalendar = new PublicGoogleCalendar({ calendarId: '6m67tvpmmadgsg0
 
 var goldDayCalendar = new PublicGoogleCalendar({ calendarId: 'ajfretm1425r1u05fgvem49t8c@group.calendar.google.com' });
 var greenDayCalendar = new PublicGoogleCalendar({ calendarId: 'ajtvvqauv2vve92sso48bvr3bo@group.calendar.google.com' });
-var unifiedDayCalendar = new PublicGoogleCalendar({ calendarId: '4e772o7r2nma870gmbiqmpjqlk@group.calendar.google.com' });
+var unifiedDayCalendar = new PublicGoogleCalendar({ calendarId: 'bishopblanchet.org_4e772o7r2nma870gmbiqmpjqlk@group.calendar.google.com' });
 var specialDayCalendar = new PublicGoogleCalendar({ calendarId: '50ul1lh5iev5tqfhl1cab6gke8@group.calendar.google.com' });
 
 var moment = require('moment');
@@ -182,6 +182,7 @@ function GetGoogleCalendarData( sport,
     self.schedule = [];
     self.goldDaysSchedule = [];
     self.greenDaysSchedule = [];
+    self.unifiedDaysSchedule = [];
     self.alexaResponse = null;
 
     callback();
@@ -216,7 +217,11 @@ function GetGoogleCalendarData( sport,
         var currentEvent = {};
 
     //    if (year == "2018") {
-        if ((year == "2018") && ((month == "8") || (month == "9") || (month == "10"))) {
+        if ((year == "2018") && ((month == "8") ||
+                                 (month == "9") ||
+                                 (month == "10") ||
+                                 (month == "11") ||
+                                 (month == "12"))) {
 //        if ((year == "2018") &&  (month == "6")) {
   //        if ((year == "2018") && ((month == "4"))) {
     //    if ((year == "2018") && (month == "3") && (day == "10")) {
@@ -225,6 +230,7 @@ function GetGoogleCalendarData( sport,
 
           if (event.rawStartTime != undefined) {
 //            var startTimeObject = momentTZ(event.rawStartTime).tz("America/Los_Angeles");
+            console.log('rawStartTime =-> ', event.rawStartTime);
             var startTimeObject = moment(event.rawStartTime);
           } else {
 //            var startTimeObject = momentTZ(event.start).tz("America/Los_Angeles");
@@ -352,12 +358,6 @@ function GetGoogleCalendarData( sport,
 
       processTypeOfDay(self.greenDaysSchedule, events);
 
-      var deleteMeAddEvent = {};
-      deleteMeAddEvent.eventDate = "2018-06-11";
-      deleteMeAddEvent.summary = "Green Day";
-
-      self.greenDaysSchedule.push(deleteMeAddEvent);
-
       callback();
     });
 
@@ -397,6 +397,8 @@ function GetGoogleCalendarData( sport,
     self.finalFilteredSchedule = self.goldDaysSchedule.concat(self.greenDaysSchedule);
     self.schedule = self.finalFilteredSchedule;
 
+    console.log('Combined GREEN and GOLD day calendars =-> ', self.schedule);
+
     callback();
   } // end of combineGoldandGreenDaySchedules
 
@@ -409,9 +411,7 @@ function GetGoogleCalendarData( sport,
     unifiedDayCalendar.getEvents(function(err, events) {
       if (err) { return console.log(err.message); }
 
-      processCalenderData(self.schedule, events);
-
-      self.finalFilteredSchedule = self.schedule;  //TODO This is a shortcut!!!
+      processTypeOfDay(self.unifiedDaysSchedule, events);
 
       callback();
     });
@@ -428,8 +428,6 @@ function GetGoogleCalendarData( sport,
 
       processCalenderData(self.schedule, events);
 
-      self.finalFilteredSchedule = self.schedule;  //TODO This is a shortcut!!!
-
       callback();
     });
 
@@ -437,7 +435,15 @@ function GetGoogleCalendarData( sport,
 
 
 
+  this.combineGoldGreenAndUnifiedDaySchedules = function(callback) {
 
+    // TODO:  Take time to figure out what variables you want to use for final or in process.
+    self.schedule = self.unifiedDaysSchedule.concat(self.schedule);
+
+    console.log('Combined GREEN, GOLD and UNIFIED calendars =-> ', self.schedule);
+
+    callback();
+  } // end of combineGoldandGreenDaySchedules
 
 
 
@@ -489,13 +495,32 @@ function GetGoogleCalendarData( sport,
 
     console.log('sportFilteredSchedule: ', self.sportFilteredSchedule);
 
+
+
+    self.dateAndSportFilteredSchedule = self.sportFilteredSchedule.filter((eventInstance) => {
+
+      var dateInQuestion = moment(eventInstance.eventDate);
+      var today = moment();
+      // moment("12-25-1995", "MM-DD-YYYY");
+
+      if (dateInQuestion.isSameOrAfter(today)) {
+        return true;
+      }
+    });
+
+    // TODO previous 2 filters could become 1 filter for date and sport
+
+    console.log('sport AND today or after filter =-> ', self.dateAndSportFilteredSchedule);
     // self.squadFilteredSchedule = self.sportFilteredSchedule.filter((eventInstance) =>
     //                               eventInstance.squad == squad);
 
     // self.finalFilteredSchedule = self.squadFilteredSchedule.filter((eventInstance) =>
     //                               eventInstance.eventType == eventType);
 
-    self.finalFilteredSchedule = self.sportFilteredSchedule;
+
+    //self.finalFilteredSchedule = self.sportFilteredSchedule;
+
+    self.finalFilteredSchedule = self.dateAndSportFilteredSchedule;
 
     callback();
   }
@@ -769,9 +794,9 @@ exports.getDayDetails = function(date, callerCallback) {
     getGoogleCalendarData.getGreenDayCalendarData,
     getGoogleCalendarData.getGoldDayCalendarData,
     getGoogleCalendarData.debugPrintGreenAndGold,
-    //getGoogleCalendarData.getUnifiedDayCalendarData,   // not working
-    //getGoogleCalendarData.getSpecialDayCalendarData,   // not working
+    getGoogleCalendarData.getUnifiedDayCalendarData,   // not working
     getGoogleCalendarData.combineGoldandGreenDaySchedules,
+    getGoogleCalendarData.combineGoldGreenAndUnifiedDaySchedules,
     getGoogleCalendarData.filterForNumberOfDays,
     getGoogleCalendarData.updateFinalResultsAfterFilter,
     getGoogleCalendarData.sortTheArray,

@@ -25,8 +25,8 @@ provider:
 #  memorySize: 3008
 
 #  stage: dev
-  stage: prodaug2018
-#  stage: prodblue
+#  stage: prodaug2018
+  stage: prodsept2018
 
 
 

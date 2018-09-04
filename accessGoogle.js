@@ -169,14 +169,14 @@ greenDayCalendar.getEvents(function(err, events) {
 
 });
 
-// unifiedDayCalendar.getEvents(function(err, events) {
-//   console.log('unfied  days');
-//
-//   processTypeOfDay(unifiedDaysSchedule, events)
-//   console.log('********************');
-//   console.log('Unified: ', unifiedDaysSchedule);
-//
-// });
-//
+unifiedDayCalendar.getEvents(function(err, events) {
+  console.log('unified  days');
+
+  processTypeOfDay(unifiedDaysSchedule, events)
+  console.log('********************');
+  console.log('Unified: ', unifiedDaysSchedule);
+
+});
+
 // var allTypesOfDays = goldDaysSchedule.concat(greenDaysSchedule);
 // console.log('allTypesOfDays: ', allTypesOfDays);
