@@ -541,13 +541,31 @@ exports.getTeamScheduleFromCalendar = function(event, context, callback) {
 
             if (overrideToSpreadsheetSchedule(sportName)) {
               console.log('Override to use spredsheet for schedule.  Sport:  ', sportName);
+              console.log('Squad =-> ', squad);
 
-              spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
+              if ((squad == undefined) || (squad == "varsity")) {
+                spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
+                                    lookUpSportSpreadsheetID(sportName),
+                                    6, // what sheet tab to view
+                                    30, // how many rows to fetch
+                                    7, // num columns
+                                    callback);
+              } else if (squad == "jv") {  // get "jv"
+                spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
+                                    lookUpSportSpreadsheetID(sportName),
+                                    7, // what sheet tab to view
+                                    30, // how many rows to fetch
+                                    7, // num columns
+                                    callback);
+              } else { // get "jvc"
+                spreadsheetAccess.getGoogleSpreadsheetDataMultColumns(
                                   lookUpSportSpreadsheetID(sportName),
-                                  6, // what sheet tab to view
+                                  8, // what sheet tab to view
                                   30, // how many rows to fetch
                                   7, // num columns
                                   callback);
+              }
+
             } else {
 
               googleCalendarData.getGoogleSportsCalendarData(

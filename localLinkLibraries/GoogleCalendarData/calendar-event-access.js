@@ -40,14 +40,14 @@ function assignSquad(summaryString) {
 
   // if ((lowerCaseSummaryString.indexOf("varsity")) ||
   //     (lowerCaseSummaryString.indexOf("/V")) >= 0) {
-  if (lowerCaseSummaryString.indexOf("varsity") >= 0) {
-    return "varsity";
-  } else if (lowerCaseSummaryString.indexOf("jv") >= 0) {
+  if (lowerCaseSummaryString.indexOf("jv") >= 0) {
     return "jv";
-  } else if (lowerCaseSummaryString.indexOf("fresh") >= 0) {
-    return "freshman";
+  } else if ((lowerCaseSummaryString.indexOf("fresh") >= 0) ||
+             (lowerCaseSummaryString.indexOf("jvc") >= 0) ||
+             (lowerCaseSummaryString.indexOf("frosh") >= 0)) {
+    return "jvc";
   } else {
-    return "undefined";
+    return "varsity";
   }
 }
 
@@ -488,14 +488,14 @@ function GetGoogleCalendarData( sport,
     console.log('sport: ', sport);
     console.log('squad: ', squad);
 
+    console.log('number of items before filter: ', self.schedule.length);
     console.log('before filter: ', self.schedule);
 
     self.sportFilteredSchedule = self.schedule.filter((eventInstance) =>
                                   eventInstance.sport == sport);
 
+    console.log('number of items in sport filtered schedule: ', self.sportFilteredSchedule.length);
     console.log('sportFilteredSchedule: ', self.sportFilteredSchedule);
-
-
 
     self.dateAndSportFilteredSchedule = self.sportFilteredSchedule.filter((eventInstance) => {
 
@@ -510,17 +510,21 @@ function GetGoogleCalendarData( sport,
 
     // TODO previous 2 filters could become 1 filter for date and sport
 
+    console.log('sport AND today after filter length: ', self.dateAndSportFilteredSchedule.length);
     console.log('sport AND today or after filter =-> ', self.dateAndSportFilteredSchedule);
-    // self.squadFilteredSchedule = self.sportFilteredSchedule.filter((eventInstance) =>
-    //                               eventInstance.squad == squad);
 
-    // self.finalFilteredSchedule = self.squadFilteredSchedule.filter((eventInstance) =>
+    self.squadDateAndSportFilteredSchedule = self.dateAndSportFilteredSchedule.filter((eventInstance) =>
+                                  eventInstance.squad == squad);
+
+    // self.finalFilteredSchedule = self.squadDateAndSportFilteredSchedule.filter((eventInstance) =>
     //                               eventInstance.eventType == eventType);
 
 
     //self.finalFilteredSchedule = self.sportFilteredSchedule;
 
-    self.finalFilteredSchedule = self.dateAndSportFilteredSchedule;
+    //self.finalFilteredSchedule = self.dateAndSportFilteredSchedule;
+
+    self.finalFilteredSchedule = self.squadDateAndSportFilteredSchedule;
 
     callback();
   }
@@ -644,6 +648,7 @@ function GetGoogleCalendarData( sport,
   this.callTheCallback = function(callback) {
 
     console.log('inside returnData');
+    console.log('self.finalFilteredSchedule: ', self.finalFilteredSchedule);
 
     self.callerCallback(null, self.finalFilteredSchedule);
   }

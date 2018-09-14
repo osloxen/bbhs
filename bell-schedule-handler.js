@@ -59,6 +59,7 @@ exports.getBellSchedule = function(event, context, callback) {
 
           if (arrayOfBellScheduleData[12] != undefined) {
             console.log('HUMAN DETECTED!!! Override found for bell schedule!');
+            console.log('Found this value: ', arrayOfBellScheduleData[12]);
             overrideBellSchedule = true;
           } else {
             console.log('no override found.');
