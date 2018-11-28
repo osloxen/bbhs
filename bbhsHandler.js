@@ -175,6 +175,12 @@ function lookUpSportSpreadsheetID(sportName) {
     case "cross-country":
         return '1EU1VNA-NO5DxG2Yx6CxZS_fGS_rWIO9SZso5zLLWv68';
         break;
+    case "boys-basketball":
+        return '1mdZDENJowSlsWSgXoS8hADp99nXfXiMQIb4lT0NlIDQ';
+        break;
+    case "girls-basketball":
+        return '1lCDJwRSRtuvkuzTPGGTfGYzkBKZOcXa8S8N7cw-BWxY';
+        break;
     default:
         return undefined
   }

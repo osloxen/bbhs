@@ -15,3 +15,8 @@ var dayAfterTomorrow = moment().add(2, 'days');
 
 console.log('Today: ', today.format('YYYY-MM-DD'));
 console.log('Tomorrow: ', tomorrow.format('YYYY-MM-DD'));
+
+
+console.log('day of week: ', today.format('dddd'));
+console.log('day of week: ', tomorrow.format('dddd'));
+console.log('day of week: ', dayAfterTomorrow.format('dddd'));

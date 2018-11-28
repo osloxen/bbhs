@@ -18,7 +18,7 @@ var specialDayCalendar = new PublicGoogleCalendar({ calendarId: '50ul1lh5iev5tqf
 
 var moment = require('moment');
 var momentTZ = require('moment-timezone');
-
+var _ = require('lodash');
 
 function awayOrHome(summaryString) {
 
@@ -501,9 +501,10 @@ function GetGoogleCalendarData( sport,
 
       var dateInQuestion = moment(eventInstance.eventDate);
       var today = moment();
+      var yesterday = moment().subtract(2, 'days');
       // moment("12-25-1995", "MM-DD-YYYY");
 
-      if (dateInQuestion.isSameOrAfter(today)) {
+      if (dateInQuestion.isSameOrAfter(yesterday)) {
         return true;
       }
     });
@@ -607,13 +608,30 @@ function GetGoogleCalendarData( sport,
 
     console.log('inside filterForNumberOfDays');
 
+    function assignTypeOfDay(day) {
+
+      console.log('called function assignTypeOfDay');
+      console.log('day = ', day.format('YYYY-MM-DD'));
+
+      if ((day.format('dddd') == 'Saturday') ||
+          (day.format('dddd') == 'Sunday')) {
+
+            var returnThisObject = {
+                eventDate : day.format('YYYY-MM-DD'),
+                summary: 'Weekend'
+              };
+            return returnThisObject;
+        } else {
+
+          var returnThisObject = {
+              eventDate : day.format('YYYY-MM-DD'),
+              summary: 'Unified Day'
+            };
+          return returnThisObject;
+        }
+    }
+
     self.schedLookAhead = [];
-
-    //moment().tz("America/Los_Angeles").format();
-
-    // var today = momentTZ().tz("America/Los_Angeles");
-    // var tomorrow = momentTZ().tz("America/Los_Angeles").add(1, 'days');
-    // var dayAfterTomorrow = momentTZ().tz("America/Los_Angeles").add(2, 'days');
 
     var today = moment();
     var tomorrow = moment().add(1, 'days');
@@ -627,7 +645,24 @@ function GetGoogleCalendarData( sport,
 
     self.schedLookAhead = self.schedule.filter((event) =>
                             ((event.eventDate == today.format('YYYY-MM-DD')) ||
-                            (event.eventDate == tomorrow.format('YYYY-MM-DD'))));
+                            (event.eventDate == tomorrow.format('YYYY-MM-DD')) ||
+                            (event.eventDate == dayAfterTomorrow.format('YYYY-MM-DD'))));
+
+    // Notice the NOT or (!)
+    if (!_.find(self.schedLookAhead, function(o) { return o.eventDate == today.format('YYYY-MM-DD'); })) {
+      console.log('Did NOT find today =-> ', today.format('YYYY-MM-DD'));
+      self.schedLookAhead.push(assignTypeOfDay(today));
+    }
+
+    if (!_.find(self.schedLookAhead, function(o) { return o.eventDate == tomorrow.format('YYYY-MM-DD'); })) {
+      console.log('Did NOT find tomorrow =-> ', tomorrow.format('YYYY-MM-DD'));
+      self.schedLookAhead.push(assignTypeOfDay(tomorrow));
+    }
+
+    if (!_.find(self.schedLookAhead, function(o) { return o.eventDate == dayAfterTomorrow.format('YYYY-MM-DD'); })) {
+      console.log('Did NOT find day after tomorrow =-> ', dayAfterTomorrow.format('YYYY-MM-DD'));
+      self.schedLookAhead.push(assignTypeOfDay(dayAfterTomorrow));
+    }
 
     console.log('schedLookAhead: ', self.schedLookAhead);
 
@@ -638,7 +673,12 @@ function GetGoogleCalendarData( sport,
 
   this.updateFinalResultsAfterFilter = function(callback) {
 
+    console.log('Inside updateFinalResultsAfterFilter');
+
+
+
     self.finalFilteredSchedule = self.schedLookAhead;
+    console.log('self.finalFilteredSchedule =-> ', self.finalFilteredSchedule);
 
     callback();
   }
