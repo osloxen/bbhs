@@ -17,6 +17,8 @@
     "moment": "^2.22.0",
     "moment-timezone": "^0.5.14",
     "public-google-calendar": "^0.2.0",
+    "request": "^2.88.0",
     "stripchar": "^1.2.1"
-  }
+  },
+  "devDependencies": {}
 }

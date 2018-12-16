@@ -24,6 +24,12 @@ function overrideToSpreadsheetSchedule(sport) {
     case "volleyball":
       return true;
       break;
+    case "boys-basketball":
+      return true;
+      break;
+    case "girls-basketball":
+      return true;
+      break;
     default:
       return false;
   }

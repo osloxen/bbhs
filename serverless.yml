@@ -1,17 +1,4 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
-service: BBHS-Service # NOTE: update this with your service name
+service: BBHS-Service
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -22,14 +9,14 @@ provider:
   runtime: nodejs6.10
   timeout: 30
   region: us-west-2
+  # region: us-east-1
 #  memorySize: 3008
 
-#  stage: dev
+  # stage: dev
 #  stage: prodaug2018
-#  stage: prodsept2018
-  stage: prod
-
-
+  stage: prodsept2018
+  # stage: prodoct2018
+  # stage: prod
 
 
 functions:
