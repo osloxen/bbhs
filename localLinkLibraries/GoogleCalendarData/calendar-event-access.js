@@ -184,6 +184,7 @@ function GetGoogleCalendarData( sport,
     self.goldDaysSchedule = [];
     self.greenDaysSchedule = [];
     self.unifiedDaysSchedule = [];
+    self.specialDaysSchedule = [];
     self.typeOfDaySchedule = [];
     self.alexaResponse = null;
 
@@ -357,11 +358,69 @@ function GetGoogleCalendarData( sport,
     self.typeOfDaySchedule = self.typeOfDaySchedule.concat(self.greenDaysSchedule);
     self.typeOfDaySchedule = self.typeOfDaySchedule.concat(self.goldDaysSchedule);
     self.typeOfDaySchedule = self.typeOfDaySchedule.concat(self.unifiedDaysSchedule);
+    self.typeOfDaySchedule = self.typeOfDaySchedule.concat(self.specialDaysSchedule);
 
     console.log('typeOfDaySchedule after combining =-> ', self.typeOfDaySchedule);
 
     callback();
   }  // end of addAllTypeOfDayToCalendarList
+
+
+
+
+  this.getAllSpecialDaysCalendarData = function(callback) {
+
+    console.log('inside getAllSpecialDaysCalendarData!!!');
+
+    var specialCalendarOptions = {
+      url: 'https://www.googleapis.com/calendar/v3/calendars/50ul1lh5iev5tqfhl1cab6gke8@group.calendar.google.com/events?key=AIzaSyCMWI8Yaxv1m3aiT9oLbQBXi9xIdTm_D2E&maxResults=2500',
+      headers: {
+        'User-Agend': 'request'
+      }
+    };
+
+
+    function requestCallback(error, response, body) {
+      if (!error && response.statusCode == 200) {
+        var info = JSON.parse(body);
+        console.log(info.summary);
+        console.log('number of events =-> ', info.items.length);
+
+        info.items.forEach( (event) => {
+          var dateOfEvent = undefined;
+
+          if ((event.start != undefined) &&
+              (event.start.date != undefined)) {
+
+            dateOfEvent = moment(event.start.date);
+
+            var year = dateOfEvent.format('Y');
+
+            if (year >= 2018) {
+              var addThisDay = {};
+              addThisDay.summary = event.summary;
+              addThisDay.eventDate = dateOfEvent.format('YYYY-MM-DD');
+              self.specialDaysSchedule.push(addThisDay);
+            }
+          }
+
+
+        });
+
+        // following should be called after above forEach is done.
+        callback();
+
+      } else {
+        console.log('ERROR WITH REST CALL TO GET TYPE OF DAY.  Google API call.');
+        console.log('This should page me 24 7');
+      }
+    }
+
+
+    request(specialCalendarOptions,requestCallback);
+
+  } // end of this.getAllSpecialDaysCalendarData
+
 
 
 
@@ -540,6 +599,7 @@ function GetGoogleCalendarData( sport,
     console.log('GREEN: ', self.greenDaysSchedule);
     console.log('GOLD: ', self.goldDaysSchedule);
     console.log('UNIFIED: ', self.unifiedDaysSchedule);
+    console.log('SPECIAL: ', self.specialDaysSchedule);
 
     callback();
   } // end of debugPrintGreenAndGold
@@ -1039,6 +1099,7 @@ exports.getDayDetails = function(date, callerCallback) {
     getGoogleCalendarData.getGreenDayCalendarData,
     getGoogleCalendarData.getGoldDayCalendarData,
     getGoogleCalendarData.getUnifiedDayCalendarData,
+    getGoogleCalendarData.getAllSpecialDaysCalendarData,
     getGoogleCalendarData.debugPrintGreenAndGold,
     getGoogleCalendarData.addAllTypeOfDayToCalendarList,
     // getGoogleCalendarData.combineGoldandGreenDaySchedules,
