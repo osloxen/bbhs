@@ -48,6 +48,9 @@ function requestCallback(error, response, body) {
 
             var year = dateOfEvent.format('Y');
 
+            console.log('Year = ', year);
+
+
             if (year >= 2018) {
               console.log(event.summary);
               console.log(event.start);
